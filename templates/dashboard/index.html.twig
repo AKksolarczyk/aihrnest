@@ -1110,29 +1110,34 @@
                             <article class="panel">
                                 <div class="eyebrow">Admin / biurka</div>
                                 <h2>Modyfikowanie nazw biurek</h2>
-                                <p class="lead">Ten widok jest dostepny tylko dla administratora i pozwala zmieniac nazwy wyswietlane w planie pomieszczen oraz przy rezerwacjach.</p>
+                                <p class="lead">Ten widok jest dostepny tylko dla administratora i pozwala zmieniac nazwy wyswietlane w planie pomieszczen oraz przy rezerwacjach. Mozesz wpisac kilka zmian naraz i zapisac je jednym przyciskiem albo klawiszem Enter.</p>
 
-                                <div class="admin-desk-grid">
-                                    {% for room in rooms %}
-                                        {% for desk in room.desks %}
-                                            <form class="admin-desk-form" method="post" action="{{ path('app_admin_desk_label_update', {deskId: desk.id}) }}">
-                                                <div>
-                                                    <strong>{{ desk.id }}</strong>
-                                                    <span>{{ room.name }}</span>
+                                <form method="post" action="{{ path('app_admin_desk_label_update') }}">
+                                    <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                    <input type="hidden" name="activeUserId" value="{{ activeUser.id }}">
+                                    <input type="hidden" name="tab" value="admin-desks">
+
+                                    <div class="admin-desk-grid">
+                                        {% for room in rooms %}
+                                            {% for desk in room.desks %}
+                                                <div class="admin-desk-form">
+                                                    <div>
+                                                        <strong>{{ desk.id }}</strong>
+                                                        <span>{{ room.name }}</span>
+                                                    </div>
+                                                    <label>
+                                                        Nazwa biurka
+                                                        <input type="text" name="labels[{{ desk.id }}]" value="{{ desk.label }}" maxlength="255" required>
+                                                    </label>
                                                 </div>
-                                                <label>
-                                                    Nazwa biurka
-                                                    <input type="text" name="label" value="{{ desk.label }}" maxlength="255" required>
-                                                </label>
-                                                <div>
-                                                    <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
-                                                    <input type="hidden" name="activeUserId" value="{{ activeUser.id }}">
-                                                    <button type="submit">Zapisz</button>
-                                                </div>
-                                            </form>
+                                            {% endfor %}
                                         {% endfor %}
-                                    {% endfor %}
-                                </div>
+                                    </div>
+
+                                    <div style="margin-top: 20px;">
+                                        <button type="submit">Zapisz wszystkie nazwy</button>
+                                    </div>
+                                </form>
                             </article>
                         </div>
                     {% endif %}
@@ -1153,6 +1158,22 @@
             const userSearchItems = Array.from(document.querySelectorAll('[data-user-search-item]'));
             const userSearchCount = document.querySelector('[data-user-search-count]');
             const userSearchEmpty = document.querySelector('[data-user-search-empty]');
+            const url = new URL(window.location.href);
+            const initialContentTab = url.searchParams.get('tab');
+
+            function activateContentTab(target) {
+                if (!target) {
+                    return;
+                }
+
+                contentTabButtons.forEach(function (item) {
+                    item.classList.toggle('active', item.getAttribute('data-content-tab-target') === target);
+                });
+
+                contentTabPanels.forEach(function (panel) {
+                    panel.classList.toggle('active', panel.getAttribute('data-content-tab') === target);
+                });
+            }
 
             function normalizeSearchText(value) {
                 return (value || '')
@@ -1205,15 +1226,7 @@
 
             contentTabButtons.forEach(function (button) {
                 button.addEventListener('click', function () {
-                    const target = button.getAttribute('data-content-tab-target');
-
-                    contentTabButtons.forEach(function (item) {
-                        item.classList.toggle('active', item === button);
-                    });
-
-                    contentTabPanels.forEach(function (panel) {
-                        panel.classList.toggle('active', panel.getAttribute('data-content-tab') === target);
-                    });
+                    activateContentTab(button.getAttribute('data-content-tab-target'));
                 });
             });
 
@@ -1221,6 +1234,8 @@
                 userSearchInput.addEventListener('input', updateUserSearch);
                 updateUserSearch();
             }
+
+            activateContentTab(initialContentTab);
         });
     </script>
 {% endblock %}
