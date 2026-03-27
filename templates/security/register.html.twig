@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rejestracja{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        body { margin: 0; min-height: 100vh; font-family: "Manrope", "Segoe UI", sans-serif; background: linear-gradient(180deg, #eef4ff 0%, #f8fbff 100%); color: #0f172a; }
+        .auth-shell { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+        .auth-card { width: min(100%, 760px); background: rgba(255,255,255,0.94); border: 1px solid rgba(148,163,184,0.22); border-radius: 28px; padding: 28px; box-shadow: 0 24px 60px rgba(15,23,42,0.12); }
+        h1, h2, p { margin-top: 0; }
+        form, .stack, .grid, .days { display: grid; gap: 14px; }
+        .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        label { display: grid; gap: 8px; font-weight: 700; }
+        input, select, button { font: inherit; border-radius: 16px; padding: 14px 16px; }
+        input, select { border: 1px solid rgba(148,163,184,0.25); background: #fff; }
+        button { border: 0; color: #fff; font-weight: 800; background: linear-gradient(135deg, #145af2 0%, #2563eb 100%); }
+        .muted { color: #64748b; }
+        .flash { padding: 12px 14px; border-radius: 16px; font-weight: 700; }
+        .flash.success { background: rgba(15,159,110,0.1); color: #0f9f6e; }
+        .flash.error { background: rgba(220,38,38,0.08); color: #dc2626; }
+        .days { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .checkbox { display: flex; gap: 10px; align-items: center; font-weight: 600; padding: 12px 14px; border-radius: 16px; border: 1px solid rgba(148,163,184,0.2); }
+        .checkbox input { padding: 0; }
+        a { color: #145af2; font-weight: 700; text-decoration: none; }
+        @media (max-width: 720px) { .grid, .days { grid-template-columns: 1fr; } }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="auth-shell">
+        <div class="auth-card">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="flash {{ label }}">{{ message }}</div>
+                {% endfor %}
+            {% endfor %}
+
+            <div class="stack">
+                <div>
+                    <h1>Utworz konto</h1>
+                    <p class="muted">Rejestracja tworzy konto logowania. Przypisanie biurka jest opcjonalne.</p>
+                </div>
+
+                <form method="post">
+                    <div class="grid">
+                        <label>
+                            Imie i nazwisko
+                            <input type="text" name="name" value="{{ values.name }}" required>
+                        </label>
+                        <label>
+                            Zespol
+                            <input type="text" name="team" value="{{ values.team }}" required>
+                        </label>
+                        <label>
+                            Email
+                            <input type="email" name="email" value="{{ values.email }}" required>
+                        </label>
+                        <label>
+                            Haslo
+                            <input type="password" name="password" required minlength="8">
+                        </label>
+                    </div>
+
+                    <label>
+                        Przypisane biurko
+                        <select name="assignedDeskId">
+                            <option value="">Brak przypisanego biurka</option>
+                            {% for deskId, desk in deskOptions %}
+                                <option value="{{ deskId }}" {% if values.assignedDeskId == deskId %}selected{% endif %}>{{ desk.label }} / {{ desk.roomName }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <div>
+                        <h2>Harmonogram dni biurowych</h2>
+                        <div class="days">
+                            {% for key, label in {monday: 'Poniedzialek', tuesday: 'Wtorek', wednesday: 'Sroda', thursday: 'Czwartek', friday: 'Piatek'} %}
+                                <label class="checkbox">
+                                    <input type="checkbox" name="schedule[]" value="{{ key }}" {% if key in values.schedule %}checked{% endif %}>
+                                    <span>{{ label }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <button type="submit">Zarejestruj konto</button>
+                </form>
+
+                <p class="muted">Masz juz konto? <a href="{{ path('app_login') }}">Przejdz do logowania</a></p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -93,9 +93,9 @@ final class GetDashboardHandler
             $statuses[] = [
                 'id' => $userId,
                 'name' => $user->name(),
-                'role' => $user->role()->value,
+                'role' => $this->resolveUserRole($user),
                 'team' => $user->team(),
-                'assignedDeskLabel' => $deskMap[$user->assignedDeskId()]['label'] ?? $user->assignedDeskId(),
+                'assignedDeskLabel' => $user->assignedDeskId() ? ($deskMap[$user->assignedDeskId()]['label'] ?? $user->assignedDeskId()) : 'brak',
                 'schedule' => $user->schedule(),
                 'vacationDaysTotal' => $user->vacationDaysTotal(),
                 'vacationDaysRemaining' => $user->vacationDaysRemaining(),
@@ -104,8 +104,9 @@ final class GetDashboardHandler
                 'deskLabel' => $deskId ? ($deskMap[$deskId]['label'] ?? $deskId) : null,
                 'statusLabel' => match (true) {
                     $isOnVacation => 'Urlop',
-                    $deskId !== null && $deskId === $user->assignedDeskId() => 'Pracuje z przypisanego biurka',
+                    $deskId !== null && $user->assignedDeskId() !== null && $deskId === $user->assignedDeskId() => 'Pracuje z przypisanego biurka',
                     $deskId !== null => 'Zajal wolne biurko',
+                    $isScheduled && !$user->hasAssignedDesk() => 'Brak przypisanego biurka',
                     default => 'Bez biurka w tym dniu',
                 },
             ];
@@ -255,9 +256,14 @@ final class GetDashboardHandler
         return [
             'id' => $user->id(),
             'name' => $user->name(),
-            'role' => $user->role()->value,
+            'role' => $this->resolveUserRole($user),
             'team' => $user->team(),
         ];
+    }
+
+    private function resolveUserRole(User $user): string
+    {
+        return in_array('ROLE_ADMIN', $user->getRoles(), true) ? 'admin' : 'user';
     }
 
     /**
