@@ -36,6 +36,15 @@ services:
     App\Workspace\Domain\Repository\DeskClaimRepositoryInterface:
         alias: App\Workspace\Infrastructure\Persistence\DoctrineDeskClaimRepository
 
+    App\Workspace\Domain\Repository\DeskWaitlistRepositoryInterface:
+        alias: App\Workspace\Infrastructure\Persistence\DoctrineDeskWaitlistRepository
+
+    App\Workspace\Domain\Repository\RecurringDeskReservationRepositoryInterface:
+        alias: App\Workspace\Infrastructure\Persistence\DoctrineRecurringDeskReservationRepository
+
+    App\Workspace\Domain\Repository\IssueReportRepositoryInterface:
+        alias: App\Workspace\Infrastructure\Persistence\DoctrineIssueReportRepository
+
     App\Workspace\Domain\Repository\WorkspaceTransactionInterface:
         alias: App\Workspace\Infrastructure\Persistence\DoctrineWorkspaceTransaction
 

@@ -14,6 +14,11 @@ Smart Desk & Rooms Scheduler to aplikacja webowa do:
 - użytkownik może anulować swoją rezerwację
 - system ma wspierać konfigurację przestrzeni biurowej, pięter, pomieszczeń i zasobów
 - system ma wspierać absencje pracowników, które wpływają na dostępność zasobów
+- system moze wspierac waitliste na zajete zasoby
+- system moze wspierac rezerwacje cykliczne
+- system moze wspierac zglaszanie problemow z zasobami
+- system moze wspierac wyszukiwanie osob obecnych w biurze
+- system ma dostarczac raporty operacyjne dla administratora
 
 ## Założenia bieżącego etapu
 

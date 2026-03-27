@@ -18,6 +18,13 @@ final readonly class DashboardView
      * @param list<array{id: string, label: string, roomName: string}> $availableDesks
      * @param array<int, array<string, string>> $vacations
      * @param array<int, array<string, string>> $deskClaims
+     * @param list<array{id: string, label: string, roomName: string}> $deskCatalog
+     * @param list<array{id: string, name: string}> $roomCatalog
+     * @param array<int, array<string, string>> $deskWaitlist
+     * @param array<int, array<string, string|array<int, string>>> $recurringReservations
+     * @param array<int, array<string, string>> $issueReports
+     * @param array<int, array<string, string>> $peopleFinder
+     * @param array<string, mixed> $adminReports
      * @param array<string, int> $summary
      */
     public function __construct(
@@ -31,6 +38,13 @@ final readonly class DashboardView
         public array $availableDesks,
         public array $vacations,
         public array $deskClaims,
+        public array $deskCatalog,
+        public array $roomCatalog,
+        public array $deskWaitlist,
+        public array $recurringReservations,
+        public array $issueReports,
+        public array $peopleFinder,
+        public array $adminReports,
         public array $summary,
     ) {
     }
@@ -51,6 +65,13 @@ final readonly class DashboardView
             'availableDesks' => $this->availableDesks,
             'vacations' => $this->vacations,
             'deskClaims' => $this->deskClaims,
+            'deskCatalog' => $this->deskCatalog,
+            'roomCatalog' => $this->roomCatalog,
+            'deskWaitlist' => $this->deskWaitlist,
+            'recurringReservations' => $this->recurringReservations,
+            'issueReports' => $this->issueReports,
+            'peopleFinder' => $this->peopleFinder,
+            'adminReports' => $this->adminReports,
             'summary' => $this->summary,
         ];
     }

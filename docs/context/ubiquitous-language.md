@@ -12,8 +12,13 @@ Ten dokument definiuje wspolny slownik projektu. Nazwy w kodzie, dokumentacji i 
 - Przypisane biurko: domyslne biurko uzytkownika. Moze byc puste.
 - Rezerwacja biurka: zajecie konkretnego biurka przez konkretnego uzytkownika na wskazany dzien.
 - Roszczenie do biurka: aktualny techniczny zapis zajecia biurka w systemie.
+- Waitlista biurka: kolejka chetnych na zajete biurko w konkretnym dniu.
+- Rezerwacja cykliczna: regula tworzaca zajecia biurka dla wybranych dni tygodnia w przedziale dat.
 - Sala konferencyjna: zasob przeznaczony do spotkan. W obecnym etapie model docelowy, jeszcze nie w pelni zaimplementowany.
 - Urlop: zapisana nieobecnosc uzytkownika w zadanym zakresie dat.
+- Zgloszenie problemu: raport uzytkownika dotyczacy biurka albo pomieszczenia.
+- People finder: widok pokazujacy, kto jest danego dnia w biurze i gdzie siedzi.
+- Raport admina: zestawienie operacyjne dla administratora, oparte na danych o zajeciach, waitliscie i problemach.
 - Dzien roboczy: dzien liczony do urlopu przez polityke biznesowa.
 - Dostepnosc zasobu: stan okreslajacy, czy biurko albo sala moga zostac zarezerwowane.
 - Mapa biura: wizualna reprezentacja pomieszczen i biurek.
@@ -23,6 +28,9 @@ Ten dokument definiuje wspolny slownik projektu. Nazwy w kodzie, dokumentacji i 
 - "User" oznacza konto aplikacyjne pracownika, nie dowolnego aktora systemu.
 - "Vacation" oznacza wewnetrzny model urlopu lub nieobecnosci blokujacej obecnosc w biurze.
 - "DeskClaim" w obecnym kodzie oznacza rezerwacje biurka na dany dzien.
+- "DeskWaitlistEntry" oznacza pojedynczy wpis na waitliscie dla biurka i dnia.
+- "RecurringDeskReservation" oznacza regule cyklicznego zajmowania biurka.
+- "IssueReport" oznacza zgloszenie operacyjne o problemie z zasobem.
 - "Office layout" oznacza strukture pomieszczen i polozenie zasobow na mapie.
 - "Register user" oznacza utworzenie konta logowania, a nie tylko profilu pracownika.
 - "Activate account" oznacza potwierdzenie email i odblokowanie logowania.

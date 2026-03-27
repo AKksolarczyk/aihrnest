@@ -280,8 +280,9 @@
                 <h1>Biurka, sale i nieobecnosci w jednej aplikacji.</h1>
                 <p class="lead">
                     Smart Desk porzadkuje planowanie pracy z biura. Pokazuje dostepnosc zasobow w widoku dnia,
-                    pozwala rezerwowac biurka i przygotowuje fundament pod zarzadzanie salami konferencyjnymi oraz
-                    integracje absencji z systemem HR.
+                    pozwala rezerwowac biurka, budowac waitliste, planowac cykliczne obecnosci, zglaszac problemy
+                    z zasobami i przygotowuje fundament pod zarzadzanie salami konferencyjnymi oraz integracje
+                    absencji z systemem HR.
                 </p>
 
                 <div class="hero-actions">
@@ -297,16 +298,16 @@
                     <span>Rezerwacja biurek na konkretny dzien z widokiem mapy biura.</span>
                 </div>
                 <div class="pill">
-                    <strong>Absence Logic</strong>
-                    <span>Wewnetrzny model urlopow i blokad dostepnosci zasobow.</span>
+                    <strong>Waitlist + Cyklicznosc</strong>
+                    <span>Lista oczekujacych na zajete miejsca i reguly cyklicznych zajec biurek.</span>
                 </div>
                 <div class="pill">
-                    <strong>Account Activation</strong>
-                    <span>Rejestracja z mailem aktywacyjnym i blokada logowania do czasu potwierdzenia.</span>
+                    <strong>People Finder</strong>
+                    <span>Szybki widok osob obecnych w biurze wraz z lokalizacja i statusem.</span>
                 </div>
                 <div class="pill">
-                    <strong>DDD + CQRS</strong>
-                    <span>Rozdzial logiki biznesowej, use case'ow i warstw infrastrukturalnych.</span>
+                    <strong>Admin Reports</strong>
+                    <span>Operacyjne raporty o zajeciach, waitliscie i zgloszeniach problemow.</span>
                 </div>
             </div>
         </section>
@@ -335,12 +336,12 @@
                     <p>Urlopy odejmuja dni z puli i blokowane sa pokrywajace sie zakresy dla tego samego uzytkownika.</p>
                 </article>
                 <article class="card">
-                    <h3>Mapa biura</h3>
-                    <p>Interfejs prezentuje sale i biurka w formie czytelnej, interaktywnej reprezentacji przestrzeni.</p>
+                    <h3>Waitlista i cyklicznosc</h3>
+                    <p>Zajete biurka wspieraja kolejke oczekujacych, a powtarzalne przyjscia do biura mozna zapisac jako rezerwacje cykliczne.</p>
                 </article>
                 <article class="card">
-                    <h3>Przygotowanie pod HR</h3>
-                    <p>Model jest gotowy do pozniejszego podpiecia HRnest bez uzalezniania rdzenia domeny od zewnetrznego API.</p>
+                    <h3>Zgloszenia i raporty</h3>
+                    <p>Uzytkownicy raportuja problemy z biurkami i pokojami, a administrator widzi raporty wykorzystania i zatorow operacyjnych.</p>
                 </article>
             </div>
         </section>
@@ -400,14 +401,14 @@
                     <div class="step-number">3</div>
                     <div>
                         <h3>Plan dnia i rezerwacje</h3>
-                        <p>Po zalogowaniu uzytkownik widzi status zasobow, zajmuje biurko i zarzadza swoim planem obecnosci.</p>
+                        <p>Po zalogowaniu uzytkownik widzi status zasobow, zajmuje biurko, dolacza do waitlisty albo tworzy rezerwacje cykliczne.</p>
                     </div>
                 </article>
                 <article class="step">
                     <div class="step-number">4</div>
                     <div>
-                        <h3>Kontrola konfliktow</h3>
-                        <p>Use case'y pilnuja dostepnosci biurek, blokad wynikajacych z urlopow i ograniczen logowania.</p>
+                        <h3>Operacje i nadzor</h3>
+                        <p>Use case'y pilnuja konfliktow, people finder pokazuje kto siedzi gdzie, a admin dostaje raporty i zgloszenia problemow.</p>
                     </div>
                 </article>
             </div>

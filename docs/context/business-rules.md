@@ -40,6 +40,34 @@ Ten dokument opisuje obowiazujace reguly biznesowe systemu na obecnym etapie.
 - Przypisane biurko nie jest tym samym co rezerwacja biurka.
 - Brak przypisanego biurka nie blokuje korzystania z systemu.
 
+## Waitlista
+
+- Waitlista dotyczy zajetego biurka i konkretnego dnia.
+- Nie mozna dodac waitlisty do biurka, ktore jest wolne.
+- Ten sam uzytkownik nie moze miec drugiego aktywnego wpisu waitlisty dla tego samego biurka i dnia.
+- Jesli uzytkownik skutecznie zajmie biurko, jego odpowiadajacy wpis waitlisty powinien zostac oznaczony jako zrealizowany.
+- Gdy biurko zostaje zwolnione, system wysyla mail do pierwszej osoby oczekujacej na to biurko i ten dzien.
+- Mail zawiera link, po ktorym uzytkownik moze zajac oczekiwane biurko, jesli miejsce nadal jest wolne.
+
+## Rezerwacje cykliczne
+
+- Rezerwacja cykliczna wymaga biurka, zakresu dat i co najmniej jednego dnia tygodnia.
+- Rezerwacja cykliczna tworzy zajecia biurka tylko dla dni pasujacych do wybranej reguly.
+- Przy generowaniu zajec cyklicznych system pomija konflikty, a nie nadpisuje istniejacych zajec.
+- Rezerwacja cykliczna nie moze wskazywac nieistniejacego biurka.
+
+## Zgloszenia problemow
+
+- Zgloszenie problemu musi dotyczyc biurka albo pomieszczenia.
+- Zgloszenie problemu musi zawierac kategorie i opis.
+- Nowe zgloszenie ma status `open`.
+
+## People finder i raporty
+
+- People finder pokazuje osoby obecne w biurze w wybranym dniu oraz ich lokalizacje albo status.
+- Raporty admina korzystaja z danych operacyjnych systemu i nie modyfikuja stanu domeny.
+- Raporty admina sa dostepne tylko dla uzytkownika z rola administratora.
+
 ## Dostepnosc i plan dnia
 
 - Widok dnia prezentuje stan biurek i uzytkownikow dla wybranego dnia.
