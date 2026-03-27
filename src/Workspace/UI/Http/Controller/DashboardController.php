@@ -25,7 +25,9 @@ final class DashboardController extends AbstractController
     public function index(Request $request, SessionInterface $session, GetDashboardHandler $handler): Response
     {
         $selectedDate = $this->resolveDate($request->query->getString('date'));
-        $activeUserId = $session->get('active_user_id', 'u1');
+        $securityUser = $this->getUser();
+        $defaultUserId = method_exists($securityUser, 'id') ? $securityUser->id() : 'u1';
+        $activeUserId = $session->get('active_user_id', $defaultUserId);
         $dashboardView = $handler->handle(new GetDashboardQuery($selectedDate, $activeUserId));
 
         return $this->render('dashboard/index.html.twig', $dashboardView->toArray());

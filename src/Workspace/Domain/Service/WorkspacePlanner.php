@@ -32,7 +32,7 @@ final class WorkspacePlanner
                 continue;
             }
 
-            if ($user->isScheduledOn($date)) {
+            if ($user->isScheduledOn($date) && $user->hasAssignedDesk()) {
                 $deskId = $user->assignedDeskId();
                 $occupancy[$deskId] = [
                     'deskId' => $deskId,

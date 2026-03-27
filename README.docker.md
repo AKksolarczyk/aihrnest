@@ -29,6 +29,13 @@ docker compose exec app php bin/console doctrine:migrations:migrate --no-interac
 docker compose exec app php bin/console doctrine:fixtures:load --no-interaction
 ```
 
+Domyslne konta z fixtures:
+
+```text
+anna.kowalska@example.com / password123
+piotr.nowak@example.com / password123
+```
+
 Uwagi:
 - setup używa wbudowanego serwera PHP, więc jest dobry na lokalny start, ale nie jako docelowy runtime
 - Traefik nasłuchuje na porcie `80`, więc jeśli port jest zajęty, trzeba go zwolnić albo zmienić mapowanie w `compose.yaml`

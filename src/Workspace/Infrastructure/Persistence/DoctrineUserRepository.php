@@ -20,6 +20,14 @@ final class DoctrineUserRepository implements UserRepositoryInterface
         return $this->entityManager->find(User::class, $userId);
     }
 
+    public function findByEmail(string $email): ?User
+    {
+        /** @var ?User $user */
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => mb_strtolower($email)]);
+
+        return $user;
+    }
+
     public function findAllOrderedByName(): array
     {
         /** @var list<User> $users */

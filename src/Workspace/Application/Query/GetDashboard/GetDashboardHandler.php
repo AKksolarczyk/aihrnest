@@ -94,7 +94,7 @@ final class GetDashboardHandler
                 'id' => $userId,
                 'name' => $user->name(),
                 'team' => $user->team(),
-                'assignedDeskLabel' => $deskMap[$user->assignedDeskId()]['label'] ?? $user->assignedDeskId(),
+                'assignedDeskLabel' => $user->assignedDeskId() ? ($deskMap[$user->assignedDeskId()]['label'] ?? $user->assignedDeskId()) : 'brak',
                 'schedule' => $user->schedule(),
                 'vacationDaysTotal' => $user->vacationDaysTotal(),
                 'vacationDaysRemaining' => $user->vacationDaysRemaining(),
@@ -103,8 +103,9 @@ final class GetDashboardHandler
                 'deskLabel' => $deskId ? ($deskMap[$deskId]['label'] ?? $deskId) : null,
                 'statusLabel' => match (true) {
                     $isOnVacation => 'Urlop',
-                    $deskId !== null && $deskId === $user->assignedDeskId() => 'Pracuje z przypisanego biurka',
+                    $deskId !== null && $user->assignedDeskId() !== null && $deskId === $user->assignedDeskId() => 'Pracuje z przypisanego biurka',
                     $deskId !== null => 'Zajal wolne biurko',
+                    $isScheduled && !$user->hasAssignedDesk() => 'Brak przypisanego biurka',
                     default => 'Bez biurka w tym dniu',
                 },
             ];
