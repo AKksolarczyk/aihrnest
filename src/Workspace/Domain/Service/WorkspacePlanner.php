@@ -4,25 +4,30 @@ declare(strict_types=1);
 
 namespace App\Workspace\Domain\Service;
 
+use App\Workspace\Domain\Model\DeskClaim;
 use App\Workspace\Domain\Model\Room;
-use App\Workspace\Domain\Model\WorkspaceState;
+use App\Workspace\Domain\Model\User;
+use App\Workspace\Domain\Model\Vacation;
 use DateTimeImmutable;
 
 final class WorkspacePlanner
 {
     /**
+     * @param list<User> $users
+     * @param list<Vacation> $vacations
+     * @param list<DeskClaim> $deskClaims
      * @param list<Room> $rooms
      */
-    public function buildDailyPlan(DateTimeImmutable $date, WorkspaceState $workspaceState, array $rooms): DailyPlan
+    public function buildDailyPlan(DateTimeImmutable $date, array $users, array $vacations, array $deskClaims, array $rooms): DailyPlan
     {
-        $users = $this->indexUsers($workspaceState);
+        $usersById = $this->indexUsers($users);
         $deskMap = $this->buildDeskMap($rooms);
         $occupancy = [];
         $userDeskMap = [];
         $vacationUserIds = [];
 
-        foreach ($users as $userId => $user) {
-            if ($this->isOnVacation($userId, $date, $workspaceState)) {
+        foreach ($usersById as $userId => $user) {
+            if ($this->isOnVacation($userId, $date, $vacations)) {
                 $vacationUserIds[$userId] = true;
                 continue;
             }
@@ -42,14 +47,14 @@ final class WorkspacePlanner
             }
         }
 
-        foreach ($workspaceState->deskClaims() as $deskClaim) {
+        foreach ($deskClaims as $deskClaim) {
             if (!$deskClaim->matchesDate($date)) {
                 continue;
             }
 
             $userId = $deskClaim->userId();
             $deskId = $deskClaim->deskId();
-            $user = $users[$userId] ?? null;
+            $user = $usersById[$userId] ?? null;
 
             if (
                 isset($vacationUserIds[$userId])
@@ -114,13 +119,14 @@ final class WorkspacePlanner
     }
 
     /**
-     * @return array<string, \App\Workspace\Domain\Model\User>
+     * @param list<User> $users
+     * @return array<string, User>
      */
-    private function indexUsers(WorkspaceState $workspaceState): array
+    private function indexUsers(array $users): array
     {
         $indexed = [];
 
-        foreach ($workspaceState->users() as $user) {
+        foreach ($users as $user) {
             $indexed[$user->id()] = $user;
         }
 
@@ -129,9 +135,12 @@ final class WorkspacePlanner
         return $indexed;
     }
 
-    private function isOnVacation(string $userId, DateTimeImmutable $date, WorkspaceState $workspaceState): bool
+    /**
+     * @param list<Vacation> $vacations
+     */
+    private function isOnVacation(string $userId, DateTimeImmutable $date, array $vacations): bool
     {
-        foreach ($workspaceState->vacations() as $vacation) {
+        foreach ($vacations as $vacation) {
             if ($vacation->userId() === $userId && $vacation->includes($date)) {
                 return true;
             }

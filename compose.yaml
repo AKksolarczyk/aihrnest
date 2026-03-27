@@ -23,6 +23,7 @@ services:
       APP_DEBUG: 1
       APP_SECRET: local-dev-secret
       DEFAULT_URI: http://smartdesk.localhost
+      DATABASE_URL: postgresql://app:app@postgres:5432/app?serverVersion=16&charset=utf8
     volumes:
       - ./:/app
       - composer_cache:/tmp/composer-cache
@@ -33,6 +34,29 @@ services:
       traefik.http.services.smartdesk.loadbalancer.server.port: "8000"
     depends_on:
       - traefik
+      - postgres
+
+###> doctrine/doctrine-bundle ###
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-16}-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:rw
+###< doctrine/doctrine-bundle ###
 
 volumes:
   composer_cache:
+
+###> doctrine/doctrine-bundle ###
+  postgres_data:
+###< doctrine/doctrine-bundle ###

@@ -5,14 +5,22 @@ declare(strict_types=1);
 namespace App\Workspace\Domain\Model;
 
 use DateTimeImmutable;
+use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 
+#[ORM\Entity]
+#[ORM\Table(name: 'workspace_vacations')]
 final class Vacation
 {
     public function __construct(
+        #[ORM\Id]
+        #[ORM\Column(type: 'string', length: 32)]
         private string $id,
+        #[ORM\Column(type: 'string', length: 32)]
         private string $userId,
+        #[ORM\Column(type: 'datetime_immutable')]
         private DateTimeImmutable $startDate,
+        #[ORM\Column(type: 'datetime_immutable')]
         private DateTimeImmutable $endDate,
     ) {
         if ($this->id === '' || $this->userId === '') {
