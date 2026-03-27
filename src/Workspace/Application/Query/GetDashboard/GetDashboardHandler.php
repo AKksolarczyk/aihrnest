@@ -114,6 +114,7 @@ final class GetDashboardHandler
             $statuses[] = [
                 'id' => $userId,
                 'name' => $user->name(),
+                'email' => $user->email(),
                 'role' => $this->resolveUserRole($user),
                 'team' => $user->team(),
                 'assignedDeskLabel' => $user->assignedDeskId() ? ($deskMap[$user->assignedDeskId()]['label'] ?? $user->assignedDeskId()) : $this->translator->trans('common.none'),
@@ -403,7 +404,9 @@ final class GetDashboardHandler
             }
 
             $people[] = [
+                'id' => (string) $status['id'],
                 'name' => (string) $status['name'],
+                'email' => (string) $status['email'],
                 'team' => (string) $status['team'],
                 'deskLabel' => (string) ($status['deskLabel'] ?? $this->translator->trans('dashboard.people.no_desk')),
                 'statusLabel' => (string) $status['statusLabel'],

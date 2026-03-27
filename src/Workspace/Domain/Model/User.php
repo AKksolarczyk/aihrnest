@@ -111,6 +111,37 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         );
     }
 
+    /**
+     * @param list<string> $schedule
+     * @param list<string> $roles
+     */
+    public static function importFromHrnest(
+        string $id,
+        string $name,
+        string $email,
+        string $team,
+        string $passwordHash,
+        ?string $assignedDeskId = null,
+        array $schedule = [],
+        int $vacationDaysTotal = 26,
+        array $roles = ['ROLE_USER'],
+    ): self {
+        return new self(
+            $id,
+            trim($name),
+            mb_strtolower(trim($email)),
+            trim($team),
+            $passwordHash,
+            self::normalizeRoles($roles),
+            true,
+            null,
+            $assignedDeskId,
+            array_values($schedule),
+            $vacationDaysTotal,
+            $vacationDaysTotal,
+        );
+    }
+
     public function id(): string
     {
         return $this->id;
@@ -176,6 +207,34 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function activate(): void
     {
+        $this->isActive = true;
+        $this->emailConfirmationToken = null;
+    }
+
+    /**
+     * @param list<string> $schedule
+     */
+    public function synchronizeFromHrnest(
+        string $name,
+        string $team,
+        array $schedule,
+        ?string $assignedDeskId,
+    ): void {
+        $normalizedName = trim($name);
+        $normalizedTeam = trim($team);
+
+        if ($normalizedName === '') {
+            throw new InvalidArgumentException('User name cannot be empty.');
+        }
+
+        if ($normalizedTeam === '') {
+            throw new InvalidArgumentException('User team cannot be empty.');
+        }
+
+        $this->name = $normalizedName;
+        $this->team = $normalizedTeam;
+        $this->schedule = array_values($schedule);
+        $this->assignedDeskId = $assignedDeskId !== '' ? $assignedDeskId : null;
         $this->isActive = true;
         $this->emailConfirmationToken = null;
     }
