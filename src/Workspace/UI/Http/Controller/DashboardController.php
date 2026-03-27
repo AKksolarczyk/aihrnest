@@ -35,10 +35,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 final class DashboardController extends AbstractController
 {
+    public function __construct(
+        private readonly TranslatorInterface $translator,
+    ) {
+    }
+
     #[Route('/', name: 'app_dashboard', methods: ['GET'])]
     public function index(Request $request, SessionInterface $session, GetDashboardHandler $handler): Response
     {
@@ -76,9 +82,9 @@ final class DashboardController extends AbstractController
                 new DateTimeImmutable($request->request->getString('endDate')),
             ));
 
-            $session->getFlashBag()->add('success', $this->trans('flash.vacation.saved'));
+            $session->getFlashBag()->add('success', $this->translator->trans('flash.vacation.saved'));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
+            $session->getFlashBag()->add('error', $this->translator->trans($exception->getMessage()));
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
@@ -99,9 +105,9 @@ final class DashboardController extends AbstractController
                 new DateTimeImmutable($date),
             ));
 
-            $session->getFlashBag()->add('success', $this->trans('flash.claim.created'));
+            $session->getFlashBag()->add('success', $this->translator->trans('flash.claim.created'));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
+            $session->getFlashBag()->add('error', $this->translator->trans($exception->getMessage()));
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
@@ -121,9 +127,9 @@ final class DashboardController extends AbstractController
                 new DateTimeImmutable($date),
             ));
 
-            $session->getFlashBag()->add('success', $this->trans('flash.claim.released'));
+            $session->getFlashBag()->add('success', $this->translator->trans('flash.claim.released'));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
+            $session->getFlashBag()->add('error', $this->translator->trans($exception->getMessage()));
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
@@ -144,9 +150,9 @@ final class DashboardController extends AbstractController
                 new DateTimeImmutable($date),
             ));
 
-            $session->getFlashBag()->add('success', $this->trans('flash.waitlist.joined'));
+            $session->getFlashBag()->add('success', $this->translator->trans('flash.waitlist.joined'));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
+            $session->getFlashBag()->add('error', $this->translator->trans($exception->getMessage()));
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
@@ -169,12 +175,12 @@ final class DashboardController extends AbstractController
                 $request->request->all('weekdays'),
             ));
 
-            $session->getFlashBag()->add('success', $this->trans('flash.recurring.created', [
+            $session->getFlashBag()->add('success', $this->translator->trans('flash.recurring.created', [
                 '%created%' => (string) $result->createdClaims,
                 '%skipped%' => (string) $result->skippedClaims,
             ]));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
+            $session->getFlashBag()->add('error', $this->translator->trans($exception->getMessage()));
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
@@ -197,9 +203,9 @@ final class DashboardController extends AbstractController
                 $request->request->getString('description'),
             ));
 
-            $session->getFlashBag()->add('success', $this->trans('flash.issue.created'));
+            $session->getFlashBag()->add('success', $this->translator->trans('flash.issue.created'));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
+            $session->getFlashBag()->add('error', $this->translator->trans($exception->getMessage()));
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
@@ -306,11 +312,11 @@ final class DashboardController extends AbstractController
 
             $transaction->flush();
 
-            $session->getFlashBag()->add('success', $this->trans('flash.admin.desks_updated', [
+            $session->getFlashBag()->add('success', $this->translator->trans('flash.admin.desks_updated', [
                 '%count%' => (string) $updatedDesks,
             ]));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
+            $session->getFlashBag()->add('error', $this->translator->trans($exception->getMessage()));
         }
 
         if ($activeUserId !== '') {

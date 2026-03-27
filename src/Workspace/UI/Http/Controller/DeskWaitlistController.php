@@ -10,12 +10,14 @@ use App\Workspace\Domain\Repository\DeskWaitlistRepositoryInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 final class DeskWaitlistController extends AbstractController
 {
     public function __construct(
         private readonly DeskWaitlistRepositoryInterface $deskWaitlistRepository,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -25,7 +27,7 @@ final class DeskWaitlistController extends AbstractController
         $entry = $this->deskWaitlistRepository->findByClaimToken($token);
 
         if ($entry === null || $entry->status() !== 'offered') {
-            $this->addFlash('error', $this->trans('flash.waitlist.invalid_link'));
+            $this->addFlash('error', $this->translator->trans('flash.waitlist.invalid_link'));
 
             return $this->redirectToRoute('app_login');
         }
@@ -37,11 +39,11 @@ final class DeskWaitlistController extends AbstractController
                 $entry->date(),
             ));
 
-            $this->addFlash('success', $this->trans('flash.waitlist.claimed'));
+            $this->addFlash('success', $this->translator->trans('flash.waitlist.claimed'));
 
             return $this->redirectToRoute('app_dashboard', ['date' => $entry->date()->format('Y-m-d')]);
         } catch (Throwable $exception) {
-            $this->addFlash('error', $this->trans($exception->getMessage()));
+            $this->addFlash('error', $this->translator->trans($exception->getMessage()));
 
             return $this->redirectToRoute('app_login');
         }

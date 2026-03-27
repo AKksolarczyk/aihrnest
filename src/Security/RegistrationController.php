@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 final class RegistrationController extends AbstractController
@@ -22,6 +23,7 @@ final class RegistrationController extends AbstractController
         private readonly OfficeLayoutRepositoryInterface $officeLayoutRepository,
         private readonly WorkspacePlanner $workspacePlanner,
         private readonly RegistrationConfirmationMailer $registrationConfirmationMailer,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -42,14 +44,14 @@ final class RegistrationController extends AbstractController
 
                 try {
                     $this->registrationConfirmationMailer->send($user);
-                    $this->addFlash('success', $this->trans('flash.registration.created'));
+                    $this->addFlash('success', $this->translator->trans('flash.registration.created'));
                 } catch (Throwable) {
-                    $this->addFlash('error', $this->trans('flash.registration.mail_failed'));
+                    $this->addFlash('error', $this->translator->trans('flash.registration.mail_failed'));
                 }
 
                 return $this->redirectToRoute('app_login');
             } catch (Throwable $exception) {
-                $this->addFlash('error', $this->trans($exception->getMessage()));
+                $this->addFlash('error', $this->translator->trans($exception->getMessage()));
             }
         }
 
