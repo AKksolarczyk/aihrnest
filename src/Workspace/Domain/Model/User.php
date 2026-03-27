@@ -51,6 +51,8 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
             throw new InvalidArgumentException('User id cannot be empty.');
         }
 
+        $this->roles = self::normalizeRoles($this->roles);
+
         if ($this->email === '') {
             throw new InvalidArgumentException('User email cannot be empty.');
         }
@@ -80,6 +82,7 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         ?string $assignedDeskId = null,
         array $schedule = [],
         int $vacationDaysTotal = 26,
+        array $roles = ['ROLE_USER'],
     ): self {
         return new self(
             $id,
@@ -87,7 +90,7 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
             mb_strtolower(trim($email)),
             trim($team),
             $passwordHash,
-            ['ROLE_USER'],
+            self::normalizeRoles($roles),
             false,
             bin2hex(random_bytes(32)),
             $assignedDeskId,
@@ -193,10 +196,33 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getRoles(): array
     {
-        $roles = $this->roles;
+        $roles = self::normalizeRoles($this->roles);
         $roles[] = 'ROLE_USER';
 
         return array_values(array_unique($roles));
+    }
+
+    /**
+     * @param list<string> $roles
+     * @return list<string>
+     */
+    private static function normalizeRoles(array $roles): array
+    {
+        $normalized = array_map(
+            static fn (string $role): string => strtoupper(trim($role)),
+            $roles,
+        );
+
+        $normalized = array_values(array_filter(
+            $normalized,
+            static fn (string $role): bool => $role !== '',
+        ));
+
+        if ($normalized === []) {
+            $normalized = ['ROLE_USER'];
+        }
+
+        return array_values(array_unique($normalized));
     }
 
     public function getPassword(): string
