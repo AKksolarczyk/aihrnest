@@ -20,6 +20,7 @@ final class RegistrationController extends AbstractController
     public function __construct(
         private readonly OfficeLayoutRepositoryInterface $officeLayoutRepository,
         private readonly WorkspacePlanner $workspacePlanner,
+        private readonly RegistrationConfirmationMailer $registrationConfirmationMailer,
     ) {
     }
 
@@ -28,7 +29,7 @@ final class RegistrationController extends AbstractController
     {
         if ($request->isMethod('POST')) {
             try {
-                $handler->handle(new RegisterUserCommand(
+                $user = $handler->handle(new RegisterUserCommand(
                     $request->request->getString('name'),
                     $request->request->getString('email'),
                     $request->request->getString('team'),
@@ -37,7 +38,12 @@ final class RegistrationController extends AbstractController
                     $request->request->all('schedule'),
                 ));
 
-                $this->addFlash('success', 'Konto zostalo utworzone. Mozesz sie zalogowac.');
+                try {
+                    $this->registrationConfirmationMailer->send($user);
+                    $this->addFlash('success', 'Konto zostalo utworzone. Wyslalismy email z linkiem aktywacyjnym.');
+                } catch (Throwable) {
+                    $this->addFlash('error', 'Konto zostalo utworzone, ale nie udalo sie wyslac maila aktywacyjnego.');
+                }
 
                 return $this->redirectToRoute('app_login');
             } catch (Throwable $exception) {

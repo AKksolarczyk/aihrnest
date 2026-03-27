@@ -33,6 +33,10 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         private string $passwordHash,
         #[ORM\Column(type: 'json')]
         private array $roles,
+        #[ORM\Column(type: 'boolean')]
+        private bool $isActive,
+        #[ORM\Column(type: 'string', length: 64, nullable: true)]
+        private ?string $emailConfirmationToken,
         #[ORM\Column(type: 'string', length: 32, nullable: true)]
         private ?string $assignedDeskId,
         /** @var list<string> */
@@ -87,6 +91,8 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
             trim($team),
             $passwordHash,
             self::normalizeRoles($roles),
+            false,
+            bin2hex(random_bytes(32)),
             $assignedDeskId,
             array_values($schedule),
             $vacationDaysTotal,
@@ -119,6 +125,16 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->assignedDeskId;
     }
 
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function emailConfirmationToken(): ?string
+    {
+        return $this->emailConfirmationToken;
+    }
+
     /**
      * @return list<string>
      */
@@ -140,6 +156,12 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function hasAssignedDesk(): bool
     {
         return $this->assignedDeskId !== null;
+    }
+
+    public function activate(): void
+    {
+        $this->isActive = true;
+        $this->emailConfirmationToken = null;
     }
 
     public function isScheduledOn(DateTimeImmutable $date): bool

@@ -5,6 +5,7 @@ Minimalny setup uruchamia Symfony za prostym Traefikiem lokalnie.
 Adresy:
 - aplikacja: `http://smartdesk.localhost`
 - dashboard Traefika: `http://localhost:8080`
+- Mailpit: `http://mailpit.localhost` albo `http://localhost:8025`
 - PostgreSQL: `localhost:5432`
 
 Start:
@@ -40,3 +41,4 @@ Uwagi:
 - setup używa wbudowanego serwera PHP, więc jest dobry na lokalny start, ale nie jako docelowy runtime
 - Traefik nasłuchuje na porcie `80`, więc jeśli port jest zajęty, trzeba go zwolnić albo zmienić mapowanie w `compose.yaml`
 - kontener `app` ma ustawiony `DATABASE_URL` wskazujacy na serwis `postgres`
+- rejestracja wysyla mail aktywacyjny przez Mailpit; bez klikniecia linku konto nie zaloguje sie do aplikacji
