@@ -8,7 +8,7 @@ final class OfficeLayoutProvider
      * @return array<int, array<string, mixed>>
      */
     public function getRooms(): array
-    {q
+    {
         return [
             [
                 'id' => 'focus-room',
