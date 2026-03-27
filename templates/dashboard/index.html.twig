@@ -611,6 +611,17 @@
             background: var(--desk-free-bg);
         }
 
+        .desk.unavailable {
+            border-style: solid;
+            background: linear-gradient(180deg, rgba(239, 68, 68, 0.10) 0%, rgba(245, 245, 244, 0.92) 100%);
+            border-color: rgba(239, 68, 68, 0.22);
+        }
+
+        :root[data-theme="dark"] .desk.unavailable {
+            background: linear-gradient(180deg, rgba(127, 29, 29, 0.32) 0%, rgba(63, 63, 70, 0.92) 100%);
+            border-color: rgba(248, 113, 113, 0.24);
+        }
+
         .desk-map {
             position: relative;
             margin-top: 16px;
@@ -704,6 +715,10 @@
 
         .map-dot.busy {
             background: #57534e;
+        }
+
+        .map-dot.unavailable {
+            background: #dc2626;
         }
 
         label {
@@ -864,6 +879,16 @@
 
         .compact-item span {
             margin-top: 4px;
+        }
+
+        .compact-item-actions {
+            margin-top: 12px;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .compact-item-actions form {
+            display: block;
         }
 
         .people-list {
@@ -1356,7 +1381,18 @@
                                             <div class="muted">{{ issue.target }}</div>
                                         </div>
                                         <div>{{ ('dashboard.issue_status.' ~ issue.status)|trans }}</div>
-                                        <div>{{ issue.reportedAt }}</div>
+                                        <div>
+                                            <div>{{ issue.reportedAt }}</div>
+                                            {% if is_granted('ROLE_ADMIN') and issue.isOpen %}
+                                                <form method="post" action="{{ path('app_admin_issue_close') }}" style="margin-top: 8px;">
+                                                    <input type="hidden" name="issueReportId" value="{{ issue.id }}">
+                                                    <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                                    <input type="hidden" name="activeUserId" value="{{ activeUser.id }}">
+                                                    <input type="hidden" name="tab" value="history">
+                                                    <button type="submit" class="ghost" style="padding: 8px 12px;">{{ 'dashboard.issue.close'|trans }}</button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 {% else %}
                                     <p class="muted">{{ 'dashboard.history.issues_empty'|trans }}</p>
@@ -1395,9 +1431,12 @@
                                                 <p class="muted">{{ room.description }}</p>
                                                 <div class="room-grid">
                                                     {% for desk in room.desks %}
-                                                        <div class="desk {% if desk.isFree %}free{% endif %}">
+                                                        <div class="desk {% if desk.isFree %}free{% endif %}{% if desk.isUnavailable %} unavailable{% endif %}">
                                                             <strong>{{ desk.label }}</strong>
-                                                            {% if desk.occupancy %}
+                                                            {% if desk.isUnavailable %}
+                                                                <p>{{ 'dashboard.desks.out_of_service'|trans }}</p>
+                                                                <span class="pill vacation">{{ 'dashboard.status.out_of_service'|trans }}</span>
+                                                            {% elseif desk.occupancy %}
                                                                 <p>{{ desk.occupancy.userName }}</p>
                                                                 <p class="muted">{{ desk.occupancy.team }}</p>
                                                                 <span class="pill {{ desk.occupancy.type }}">{{ desk.occupancy.label }}</span>
@@ -1448,9 +1487,12 @@
                                                                 class="desk-map-item"
                                                                 style="grid-column: {{ desk.position.x }} / span 1; grid-row: {{ desk.position.y }} / span 1;"
                                                             >
-                                                                <div class="desk {% if desk.isFree %}free{% endif %}">
+                                                                <div class="desk {% if desk.isFree %}free{% endif %}{% if desk.isUnavailable %} unavailable{% endif %}">
                                                                     <strong>{{ desk.label }}</strong>
-                                                                    {% if desk.occupancy %}
+                                                                    {% if desk.isUnavailable %}
+                                                                        <p>{{ 'dashboard.desks.out_of_service'|trans }}</p>
+                                                                        <span class="pill vacation">{{ 'dashboard.status.out_of_service'|trans }}</span>
+                                                                    {% elseif desk.occupancy %}
                                                                         <p>{{ desk.occupancy.userName }}</p>
                                                                         <p class="muted">{{ desk.occupancy.team }}</p>
                                                                         <span class="pill {{ desk.occupancy.type }}">{{ desk.occupancy.label }}</span>
@@ -1484,6 +1526,7 @@
                                                     <div class="map-legend" aria-hidden="true">
                                                         <span><i class="map-dot free"></i> {{ 'dashboard.desks.legend.free'|trans }}</span>
                                                         <span><i class="map-dot busy"></i> {{ 'dashboard.desks.legend.busy'|trans }}</span>
+                                                        <span><i class="map-dot unavailable"></i> {{ 'dashboard.desks.legend.unavailable'|trans }}</span>
                                                     </div>
                                                 </div>
                                             </article>
@@ -1645,6 +1688,29 @@
                                             <p class="muted">{{ 'dashboard.admin_reports.issues_empty'|trans }}</p>
                                         {% endfor %}
                                     </div>
+                                </div>
+
+                                <div class="report-list">
+                                    <h3>{{ 'dashboard.admin_reports.open_issue_list'|trans }}</h3>
+                                    {% for issue in adminReports.openIssues %}
+                                        <div class="compact-item">
+                                            <strong>{{ issue.category }}</strong>
+                                            <span class="muted">{{ issue.target }}</span>
+                                            <span>{{ issue.reportedAt }}</span>
+                                            <span class="muted">{{ issue.description }}</span>
+                                            <div class="compact-item-actions">
+                                                <form method="post" action="{{ path('app_admin_issue_close') }}">
+                                                    <input type="hidden" name="issueReportId" value="{{ issue.id }}">
+                                                    <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                                    <input type="hidden" name="activeUserId" value="{{ activeUser.id }}">
+                                                    <input type="hidden" name="tab" value="admin-reports">
+                                                    <button type="submit" class="ghost">{{ 'dashboard.issue.close'|trans }}</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <p class="muted">{{ 'dashboard.admin_reports.open_issue_list_empty'|trans }}</p>
+                                    {% endfor %}
                                 </div>
                             </article>
                         </div>

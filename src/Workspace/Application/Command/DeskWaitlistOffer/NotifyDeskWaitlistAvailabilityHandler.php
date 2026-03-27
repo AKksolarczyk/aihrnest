@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Workspace\Application\Command\DeskWaitlistOffer;
 
 use App\Workspace\Domain\Repository\DeskWaitlistRepositoryInterface;
+use App\Workspace\Domain\Repository\IssueReportRepositoryInterface;
 use App\Workspace\Domain\Repository\OfficeLayoutRepositoryInterface;
 use App\Workspace\Domain\Repository\UserRepositoryInterface;
 use App\Workspace\Domain\Repository\WorkspaceTransactionInterface;
@@ -16,6 +17,7 @@ final class NotifyDeskWaitlistAvailabilityHandler
     public function __construct(
         private readonly DeskWaitlistRepositoryInterface $deskWaitlistRepository,
         private readonly UserRepositoryInterface $userRepository,
+        private readonly IssueReportRepositoryInterface $issueReportRepository,
         private readonly OfficeLayoutRepositoryInterface $officeLayoutRepository,
         private readonly WorkspacePlanner $workspacePlanner,
         private readonly DeskWaitlistOfferMailer $mailer,
@@ -25,6 +27,10 @@ final class NotifyDeskWaitlistAvailabilityHandler
 
     public function handle(string $deskId, DateTimeImmutable $date): void
     {
+        if (isset($this->workspacePlanner->indexUnavailableDeskIds($this->issueReportRepository->findOpen())[$deskId])) {
+            return;
+        }
+
         $entries = $this->deskWaitlistRepository->findWaitingForDeskAndDate($deskId, $date);
         $nextEntry = $entries[0] ?? null;
 

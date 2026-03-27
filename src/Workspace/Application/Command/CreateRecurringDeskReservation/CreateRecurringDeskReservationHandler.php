@@ -7,6 +7,7 @@ namespace App\Workspace\Application\Command\CreateRecurringDeskReservation;
 use App\Workspace\Domain\Model\DeskClaim;
 use App\Workspace\Domain\Model\RecurringDeskReservation;
 use App\Workspace\Domain\Repository\DeskClaimRepositoryInterface;
+use App\Workspace\Domain\Repository\IssueReportRepositoryInterface;
 use App\Workspace\Domain\Repository\OfficeLayoutRepositoryInterface;
 use App\Workspace\Domain\Repository\RecurringDeskReservationRepositoryInterface;
 use App\Workspace\Domain\Repository\UserRepositoryInterface;
@@ -23,6 +24,7 @@ final class CreateRecurringDeskReservationHandler
         private readonly DeskClaimRepositoryInterface $deskClaimRepository,
         private readonly VacationRepositoryInterface $vacationRepository,
         private readonly RecurringDeskReservationRepositoryInterface $recurringDeskReservationRepository,
+        private readonly IssueReportRepositoryInterface $issueReportRepository,
         private readonly OfficeLayoutRepositoryInterface $officeLayoutRepository,
         private readonly WorkspacePlanner $workspacePlanner,
         private readonly WorkspaceTransactionInterface $workspaceTransaction,
@@ -56,15 +58,20 @@ final class CreateRecurringDeskReservationHandler
         $users = $this->userRepository->findAllOrderedByName();
         $vacations = $this->vacationRepository->findAll();
         $deskClaims = $this->deskClaimRepository->findAll();
+        $issueReports = $this->issueReportRepository->findOpen();
         $createdClaims = 0;
         $skippedClaims = 0;
+
+        if (isset($this->workspacePlanner->indexUnavailableDeskIds($issueReports)[$command->deskId])) {
+            throw new InvalidArgumentException('Wybrane biurko jest tymczasowo niedostepne z powodu otwartego zgloszenia awarii.');
+        }
 
         for ($date = $command->startDate; $date <= $command->endDate; $date = $date->add(new DateInterval('P1D'))) {
             if (!in_array(strtolower($date->format('l')), $normalizedWeekdays, true)) {
                 continue;
             }
 
-            $dailyPlan = $this->workspacePlanner->buildDailyPlan($date, $users, $vacations, $deskClaims, $rooms);
+            $dailyPlan = $this->workspacePlanner->buildDailyPlan($date, $users, $vacations, $deskClaims, $rooms, $issueReports);
 
             if ($dailyPlan->userHasDesk($command->userId) || !$dailyPlan->deskIsAvailable($command->deskId)) {
                 ++$skippedClaims;

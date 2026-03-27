@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Workspace\Domain\Service;
 
 use App\Workspace\Domain\Model\DeskClaim;
+use App\Workspace\Domain\Model\IssueReport;
 use App\Workspace\Domain\Model\Room;
 use App\Workspace\Domain\Model\User;
 use App\Workspace\Domain\Model\Vacation;
@@ -17,11 +18,13 @@ final class WorkspacePlanner
      * @param list<Vacation> $vacations
      * @param list<DeskClaim> $deskClaims
      * @param list<Room> $rooms
+     * @param list<IssueReport> $issueReports
      */
-    public function buildDailyPlan(DateTimeImmutable $date, array $users, array $vacations, array $deskClaims, array $rooms): DailyPlan
+    public function buildDailyPlan(DateTimeImmutable $date, array $users, array $vacations, array $deskClaims, array $rooms, array $issueReports = []): DailyPlan
     {
         $usersById = $this->indexUsers($users);
         $deskMap = $this->buildDeskMap($rooms);
+        $unavailableDeskIds = $this->indexUnavailableDeskIds($issueReports);
         $occupancy = [];
         $userDeskMap = [];
         $vacationUserIds = [];
@@ -34,6 +37,11 @@ final class WorkspacePlanner
 
             if ($user->isScheduledOn($date) && $user->hasAssignedDesk()) {
                 $deskId = $user->assignedDeskId();
+
+                if (isset($unavailableDeskIds[$deskId])) {
+                    continue;
+                }
+
                 $occupancy[$deskId] = [
                     'deskId' => $deskId,
                     'deskLabel' => $deskMap[$deskId]['label'] ?? $deskId,
@@ -60,6 +68,7 @@ final class WorkspacePlanner
                 isset($vacationUserIds[$userId])
                 || isset($userDeskMap[$userId])
                 || isset($occupancy[$deskId])
+                || isset($unavailableDeskIds[$deskId])
                 || $user === null
             ) {
                 continue;
@@ -80,7 +89,7 @@ final class WorkspacePlanner
         $availableDesks = [];
 
         foreach ($deskMap as $deskId => $desk) {
-            if (!isset($occupancy[$deskId])) {
+            if (!isset($occupancy[$deskId]) && !isset($unavailableDeskIds[$deskId])) {
                 $availableDesks[] = [
                     'id' => $deskId,
                     'label' => $desk['label'],
@@ -116,6 +125,31 @@ final class WorkspacePlanner
         }
 
         return $deskMap;
+    }
+
+    /**
+     * @param list<IssueReport> $issueReports
+     * @return array<string, true>
+     */
+    public function indexUnavailableDeskIds(array $issueReports): array
+    {
+        $deskIds = [];
+
+        foreach ($issueReports as $issueReport) {
+            if (!$issueReport->blocksDeskOccupancy()) {
+                continue;
+            }
+
+            $deskId = $issueReport->deskId();
+
+            if ($deskId === null) {
+                continue;
+            }
+
+            $deskIds[$deskId] = true;
+        }
+
+        return $deskIds;
     }
 
     /**

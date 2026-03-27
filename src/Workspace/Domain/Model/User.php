@@ -251,6 +251,11 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->emailConfirmationToken = null;
     }
 
+    public function changeLocale(string $locale): void
+    {
+        $this->locale = self::normalizeLocale($locale);
+    }
+
     public function pairWithHrnest(string $hrnestEmployeeId): void
     {
         $normalizedId = trim($hrnestEmployeeId);
@@ -262,10 +267,6 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->hrnestEmployeeId = $normalizedId;
     }
 
-    public function changeLocale(string $locale): void
-    {
-        $this->locale = self::normalizeLocale($locale);
-    }
 
     public function isScheduledOn(DateTimeImmutable $date): bool
     {

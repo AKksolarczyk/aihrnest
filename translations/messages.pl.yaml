@@ -81,6 +81,8 @@ flash:
     created: 'Zapisano rezerwacje cykliczna. Utworzono %created% zajec, pominieto %skipped% konfliktow.'
   issue:
     created: 'Zgloszenie problemu zostalo zapisane.'
+    created_notified: 'Zgloszenie problemu zostalo zapisane i wyslano %count% powiadomien email do administratorow.'
+    closed: 'Zgloszenie awarii zostalo zamkniete.'
   admin:
     desks_updated: 'Zaktualizowano nazwy %count% biurek.'
 
@@ -99,46 +101,74 @@ mail:
     cta: 'Zajmij to biurko'
     outro: 'Link zadziala tylko wtedy, gdy miejsce nadal bedzie wolne.'
     text: "Czesc %name%,\n\nBiurko %desk% (%room%) na dzien %date% zostalo zwolnione.\nKliknij link, aby je zajac:\n%url%\n\nLink dziala tylko wtedy, gdy biurko nadal jest wolne."
+  issue:
+    subject: 'Nowe zgloszenie awarii w Smart Desk'
+    greeting: 'Czesc %admin%,'
+    intro: '%reporter% zglosil problem typu %category% dla zasobu %resource%.'
+    description_label: 'Opis'
+    cta: 'Otworz dashboard'
+    text: "Czesc %admin%,\n\n%reporter% zglosil problem typu %category% dla zasobu %resource%.\n\nOpis:\n%description%\n\nDashboard:\n%url%"
 
 about:
   meta_title: 'About Smart Desk'
   eyebrow: 'Smart Desk & Rooms Scheduler'
   hero:
     title: 'Biurka, sale i nieobecnosci w jednej aplikacji.'
-    lead: 'Smart Desk porzadkuje planowanie pracy z biura. Pokazuje dostepnosc zasobow w widoku dnia, pozwala rezerwowac biurka, budowac waitliste, planowac cykliczne obecnosci, zglaszac problemy z zasobami i przygotowuje fundament pod zarzadzanie salami konferencyjnymi oraz integracje absencji z systemem HR.'
+    lead: 'Smart Desk porzadkuje planowanie pracy z biura end-to-end. Uzytkownik zaklada konto, aktywuje je mailem, rezerwuje biurko z mapy, dolacza do waitlisty, dostaje oferte po zwolnieniu miejsca, planuje cykliczne obecnosci, zglasza problemy i korzysta z people findera oraz raportow administracyjnych.'
     login: 'Przejdz do logowania'
     register: 'Utworz konto'
     dashboard: 'Otworz dashboard'
   pill:
     booking_title: 'Desk Booking'
-    booking: 'Rezerwacja biurek na konkretny dzien z widokiem mapy biura.'
+    booking: 'Rezerwacja i reczne zwalnianie biurek na konkretny dzien z widokiem mapy biura.'
     waitlist_title: 'Waitlist + Cyklicznosc'
-    waitlist: 'Lista oczekujacych na zajete miejsca i reguly cyklicznych zajec biurek.'
+    waitlist: 'Lista oczekujacych z mailem po zwolnieniu miejsca oraz reguly rezerwacji cyklicznych.'
     people_title: 'People Finder'
-    people: 'Szybki widok osob obecnych w biurze wraz z lokalizacja i statusem.'
+    people: 'Szybki widok osob obecnych w biurze wraz z lokalizacja, statusem i przypisanym biurkiem.'
     reports_title: 'Admin Reports'
-    reports: 'Operacyjne raporty o zajeciach, waitliscie i zgloszeniach problemow.'
+    reports: 'Operacyjne raporty o zajeciach, waitliscie, problemach i obciazeniu przestrzeni.'
   features:
     eyebrow: 'Mozliwosci aplikacji'
     title: 'Co potrafi system na obecnym etapie'
     registration:
       title: 'Rejestracja i aktywacja konta'
-      body: 'Uzytkownik zaklada konto, dostaje mail aktywacyjny i dopiero po potwierdzeniu moze sie zalogowac.'
+      body: 'Uzytkownik zaklada konto, wybiera jezyk interfejsu, dostaje mail aktywacyjny i dopiero po potwierdzeniu moze sie zalogowac.'
     dashboard:
       title: 'Dashboard dnia'
-      body: 'Widok dnia pokazuje dostepnosc biurek, aktywnych uzytkownikow, zaplanowane urlopy i szybkie akcje.'
+      body: 'Widok dnia pokazuje dostepnosc biurek, aktywnych uzytkownikow, zaplanowane urlopy, people finder i szybkie akcje operacyjne.'
     booking:
       title: 'Rezerwacja biurek'
-      body: 'System pozwala zajac wolne biurko na wybrany dzien i pilnuje konfliktow dostepnosci.'
+      body: 'System pozwala zajac wolne biurko na wybrany dzien, recznie je zwolnic i pilnuje konfliktow dostepnosci.'
     absence:
       title: 'Model nieobecnosci'
-      body: 'Urlopy odejmuja dni z puli i blokowane sa pokrywajace sie zakresy dla tego samego uzytkownika.'
+      body: 'Urlopy odejmuja dni z puli, blokowane sa pokrywajace sie zakresy, a kolidujace zajecia biurek sa zwalniane.'
     waitlist:
       title: 'Waitlista i cyklicznosc'
-      body: 'Zajete biurka wspieraja kolejke oczekujacych, a powtarzalne przyjscia do biura mozna zapisac jako rezerwacje cykliczne.'
+      body: 'Zajete biurka wspieraja kolejke oczekujacych, po zwolnieniu miejsca system wysyla mail z linkiem do zajecia, a powtarzalne przyjscia mozna zapisac jako rezerwacje cykliczne.'
     reporting:
       title: 'Zgloszenia i raporty'
-      body: 'Uzytkownicy raportuja problemy z biurkami i pokojami, a administrator widzi raporty wykorzystania i zatorow operacyjnych.'
+      body: 'Uzytkownicy raportuja problemy z biurkami i pokojami, a administrator widzi raporty wykorzystania, waitlist i zatorow operacyjnych.'
+  business:
+    eyebrow: 'Wartosc biznesowa'
+    title: 'Jakie problemy biznesowe rozwiazuje obecna wersja'
+    capacity:
+      title: 'Mniejsze marnowanie miejsc'
+      body: 'Zwolnienie biurka po urlopie albo recznej rezygnacji od razu przywraca miejsce do obiegu i zmniejsza puste rezerwacje.'
+    self_service:
+      title: 'Samodzielnosc pracownikow'
+      body: 'Pracownik sam rejestruje konto, aktywuje je, wybiera jezyk, zajmuje biurko, dolacza do waitlisty i zglasza problem bez udzialu supportu.'
+    operations:
+      title: 'Lepsza obsluga operacyjna biura'
+      body: 'Office manager i administrator widza aktualna dostepnosc, obciazenie zasobow i zgromadzone problemy w jednym miejscu.'
+    waitlist:
+      title: 'Obsluga popytu na popularne miejsca'
+      body: 'Waitlista z mailem po zwolnieniu biurka pozwala szybciej obsadzac popularne miejsca i nie trzymac procesu w recznych wiadomosciach.'
+    visibility:
+      title: 'Przejrzystosc obecnosci w biurze'
+      body: 'People finder pozwala szybko sprawdzic kto jest danego dnia w biurze, gdzie siedzi i jaki ma status miejsca.'
+    readiness:
+      title: 'Gotowosc do dalszego rozwoju'
+      body: 'Produkt ma juz fundamenty pod dalsze obszary: sale konferencyjne, HR, polityki biurowe i bardziej zaawansowane raportowanie.'
   stack:
     eyebrow: 'Stack technologiczny'
     title: 'Na czym to stoi'
@@ -155,16 +185,16 @@ about:
     title: 'Jak dziala aplikacja'
     step1:
       title: 'Utworzenie konta'
-      body: 'Nowy uzytkownik rejestruje konto, podaje harmonogram dni biurowych i opcjonalnie przypisane biurko.'
+      body: 'Nowy uzytkownik rejestruje konto, wybiera jezyk, podaje harmonogram dni biurowych i opcjonalnie przypisane biurko.'
     step2:
       title: 'Aktywacja przez email'
       body: 'System wysyla lokalnie mail z linkiem aktywacyjnym. Bez potwierdzenia konto pozostaje nieaktywne.'
     step3:
       title: 'Plan dnia i rezerwacje'
-      body: 'Po zalogowaniu uzytkownik widzi status zasobow, zajmuje biurko, dolacza do waitlisty albo tworzy rezerwacje cykliczne.'
+      body: 'Po zalogowaniu uzytkownik widzi status zasobow, zajmuje biurko, zwalnia je, dolacza do waitlisty albo tworzy rezerwacje cykliczne.'
     step4:
       title: 'Operacje i nadzor'
-      body: "Use case'y pilnuja konfliktow, people finder pokazuje kto siedzi gdzie, a admin dostaje raporty i zgloszenia problemow."
+      body: "Use case'y pilnuja konfliktow, people finder pokazuje kto siedzi gdzie, waitlista wysyla oferty po zwolnieniu miejsca, a admin dostaje raporty i zgloszenia problemow."
   footer: 'Ta strona podsumowuje obecny stan produktu. Szczegolowe zasady domenowe i architektoniczne sa opisane w docs/context.'
 
 pricing:
@@ -296,6 +326,7 @@ dashboard:
     room: 'Pomieszczenie'
     description: 'Opis'
     submit: 'Wyslij zgloszenie'
+    close: 'Zamknij awarie'
   issue_category:
     sprzet: 'Sprzet'
     komfort: 'Komfort'
@@ -336,6 +367,8 @@ dashboard:
     legend:
       free: 'Wolne biurko'
       busy: 'Zajete biurko'
+      unavailable: 'Biurko awaryjne'
+    out_of_service: 'Biurko tymczasowo niedostepne'
   week:
     eyebrow: 'Zakladka: tydzien'
     title: 'Perspektywa 5 dni'
@@ -366,6 +399,8 @@ dashboard:
     top_waitlist_empty: 'Brak danych o waitliscie.'
     issues_by_category: 'Problemy wg kategorii'
     issues_empty: 'Brak zgloszen problemow.'
+    open_issue_list: 'Otwarte awarie'
+    open_issue_list_empty: 'Brak otwartych awarii.'
     claim_count: '%count% zajec'
     waitlist_count: '%count% wpisow'
     issue_count: '%count% zgloszen'
@@ -379,6 +414,7 @@ dashboard:
     closed: 'Zamkniete'
   status:
     vacation: 'Urlop'
+    out_of_service: 'Biurko awaryjne'
     assigned_desk: 'Pracuje z przypisanego biurka'
     claimed_desk: 'Zajal wolne biurko'
     no_assigned_desk: 'Brak przypisanego biurka'
@@ -397,6 +433,9 @@ dashboard:
 'Uzytkownik z takim adresem email juz istnieje.': 'Uzytkownik z takim adresem email juz istnieje.'
 'Haslo musi miec co najmniej 8 znakow.': 'Haslo musi miec co najmniej 8 znakow.'
 'Wybrane pomieszczenie nie istnieje.': 'Wybrane pomieszczenie nie istnieje.'
+'Wybrane biurko jest tymczasowo niedostepne z powodu otwartego zgloszenia awarii.': 'Wybrane biurko jest tymczasowo niedostepne z powodu otwartego zgloszenia awarii.'
+'Nie znaleziono wskazanego zgloszenia awarii.': 'Nie znaleziono wskazanego zgloszenia awarii.'
+'To zgloszenie awarii jest juz zamkniete.': 'To zgloszenie awarii jest juz zamkniete.'
 'Brak zajecia biurka do zwolnienia w wybranym dniu.': 'Brak zajecia biurka do zwolnienia w wybranym dniu.'
 'Ten uzytkownik ma juz przydzielone biurko w wybranym dniu.': 'Ten uzytkownik ma juz przydzielone biurko w wybranym dniu.'
 'Wybrane biurko nie jest wolne.': 'Wybrane biurko nie jest wolne.'

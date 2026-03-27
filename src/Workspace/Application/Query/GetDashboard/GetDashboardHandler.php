@@ -46,11 +46,13 @@ final class GetDashboardHandler
         $deskWaitlistEntries = $this->deskWaitlistRepository->findAll();
         $recurringReservations = $this->recurringDeskReservationRepository->findAll();
         $issueReports = $this->issueReportRepository->findAll();
+        $openIssueReports = $this->issueReportRepository->findOpen();
         $rooms = $this->officeLayoutRepository->findAllRooms();
         $deskMap = $this->workspacePlanner->buildDeskMap($rooms);
+        $unavailableDeskIds = $this->workspacePlanner->indexUnavailableDeskIds($openIssueReports);
         $activeUserId = isset($users[$query->activeUserId]) ? $query->activeUserId : (array_key_first($users) ?? '');
-        $dailyPlan = $this->workspacePlanner->buildDailyPlan($query->selectedDate, array_values($users), $vacations, $deskClaims, $rooms);
-        $userStatuses = $this->buildUserStatuses($query->selectedDate, $users, $deskMap, $dailyPlan);
+        $dailyPlan = $this->workspacePlanner->buildDailyPlan($query->selectedDate, array_values($users), $vacations, $deskClaims, $rooms, $openIssueReports);
+        $userStatuses = $this->buildUserStatuses($query->selectedDate, $users, $deskMap, $dailyPlan, $unavailableDeskIds);
 
         return new DashboardView(
             $query->selectedDate,
@@ -58,8 +60,8 @@ final class GetDashboardHandler
             $this->findActiveUserStatus($userStatuses, $activeUserId),
             array_map(fn (User $user): array => $this->mapUser($user), array_values($users)),
             $userStatuses,
-            $this->buildRoomsView($rooms, $dailyPlan, $deskMap),
-            $this->buildWeekOverview($query->selectedDate, array_values($users), $vacations, $deskClaims, $rooms),
+            $this->buildRoomsView($rooms, $dailyPlan, $deskMap, $unavailableDeskIds),
+            $this->buildWeekOverview($query->selectedDate, array_values($users), $vacations, $deskClaims, $rooms, $openIssueReports),
             $dailyPlan->availableDesks(),
             $this->buildVacationsViewForUser($vacations, $activeUserId, $users),
             $this->buildDeskClaimsViewForUser($deskClaims, $activeUserId, $users, $deskMap),
@@ -102,7 +104,7 @@ final class GetDashboardHandler
      * @param array<string, array{label: string, roomName: string, roomId: string}> $deskMap
      * @return array<int, array<string, mixed>>
      */
-    private function buildUserStatuses(\DateTimeImmutable $date, array $users, array $deskMap, DailyPlan $dailyPlan): array
+    private function buildUserStatuses(\DateTimeImmutable $date, array $users, array $deskMap, DailyPlan $dailyPlan, array $unavailableDeskIds): array
     {
         $statuses = [];
 
@@ -110,6 +112,7 @@ final class GetDashboardHandler
             $deskId = $dailyPlan->userDeskMap()[$userId] ?? null;
             $isOnVacation = isset($dailyPlan->vacationUserIds()[$userId]);
             $isScheduled = $user->isScheduledOn($date);
+            $assignedDeskOutOfService = $user->assignedDeskId() !== null && isset($unavailableDeskIds[$user->assignedDeskId()]);
 
             $statuses[] = [
                 'id' => $userId,
@@ -128,6 +131,7 @@ final class GetDashboardHandler
                 'occupancyType' => $deskId !== null ? ($dailyPlan->occupancy()[$deskId]['type'] ?? null) : null,
                 'statusLabel' => match (true) {
                     $isOnVacation => $this->translator->trans('dashboard.status.vacation'),
+                    $assignedDeskOutOfService => $this->translator->trans('dashboard.status.out_of_service'),
                     $deskId !== null && $user->assignedDeskId() !== null && $deskId === $user->assignedDeskId() => $this->translator->trans('dashboard.status.assigned_desk'),
                     $deskId !== null => $this->translator->trans('dashboard.status.claimed_desk'),
                     $isScheduled && !$user->hasAssignedDesk() => $this->translator->trans('dashboard.status.no_assigned_desk'),
@@ -159,7 +163,7 @@ final class GetDashboardHandler
      * @param array<string, array{label: string, roomName: string, roomId: string}> $deskMap
      * @return array<int, array<string, mixed>>
      */
-    private function buildRoomsView(array $rooms, DailyPlan $dailyPlan, array $deskMap): array
+    private function buildRoomsView(array $rooms, DailyPlan $dailyPlan, array $deskMap, array $unavailableDeskIds): array
     {
         $view = [];
         $roomLayouts = $this->roomLayouts();
@@ -178,10 +182,11 @@ final class GetDashboardHandler
                 $desks[] = [
                     'id' => $desk->id(),
                     'label' => $deskMap[$desk->id()]['label'] ?? $desk->id(),
-                'occupancy' => $occupancy,
-                'isFree' => $occupancy === null,
-                'position' => $position,
-            ];
+                    'occupancy' => $occupancy,
+                    'isFree' => $occupancy === null && !isset($unavailableDeskIds[$desk->id()]),
+                    'isUnavailable' => isset($unavailableDeskIds[$desk->id()]),
+                    'position' => $position,
+                ];
 
             if ($occupancy !== null) {
                 $desks[array_key_last($desks)]['occupancy']['label'] = $this->translateOccupancyLabel((string) $occupancy['type']);
@@ -207,13 +212,13 @@ final class GetDashboardHandler
      * @param list<Room> $rooms
      * @return array<int, array<string, mixed>>
      */
-    private function buildWeekOverview(\DateTimeImmutable $selectedDate, array $users, array $vacations, array $deskClaims, array $rooms): array
+    private function buildWeekOverview(\DateTimeImmutable $selectedDate, array $users, array $vacations, array $deskClaims, array $rooms, array $issueReports): array
     {
         $days = [];
 
         for ($offset = 0; $offset < 5; ++$offset) {
             $day = $selectedDate->add(new DateInterval(sprintf('P%dD', $offset)));
-            $plan = $this->workspacePlanner->buildDailyPlan($day, $users, $vacations, $deskClaims, $rooms);
+            $plan = $this->workspacePlanner->buildDailyPlan($day, $users, $vacations, $deskClaims, $rooms, $issueReports);
             $days[] = [
                 'date' => $day,
                 'occupiedCount' => count($plan->occupancy()),
@@ -363,7 +368,7 @@ final class GetDashboardHandler
      * @param list<IssueReport> $issues
      * @param list<Room> $rooms
      * @param array<string, array{label: string, roomName: string, roomId: string}> $deskMap
-     * @return array<int, array<string, string>>
+     * @return array<int, array<string, string|bool>>
      */
     private function buildIssueReportsViewForUser(array $issues, string $userId, array $deskMap, array $rooms): array
     {
@@ -380,8 +385,10 @@ final class GetDashboardHandler
 
         return array_map(static function (IssueReport $issue) use ($deskMap, $roomNames): array {
             return [
+                'id' => $issue->id(),
                 'category' => $issue->category(),
                 'status' => $issue->status(),
+                'isOpen' => $issue->isOpen(),
                 'target' => $issue->deskId() !== null
                     ? (($deskMap[$issue->deskId()]['label'] ?? $issue->deskId()).' / '.($deskMap[$issue->deskId()]['roomName'] ?? ''))
                     : ($roomNames[$issue->roomId() ?? ''] ?? ($issue->roomId() ?? '')),
@@ -470,6 +477,7 @@ final class GetDashboardHandler
             'topBusyDesks' => $this->mapDeskCounterReport($deskUsage, $deskMap),
             'topWaitlistedDesks' => $this->mapDeskCounterReport($waitlistUsage, $deskMap),
             'issuesByCategory' => $this->mapSimpleCounterReport($issueCategories),
+            'openIssues' => $this->mapOpenIssueReports($issueReports, $deskMap),
         ];
     }
 
@@ -505,6 +513,35 @@ final class GetDashboardHandler
             $items[] = [
                 'label' => $this->translateIssueCategory($label),
                 'count' => $count,
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * @param list<IssueReport> $issueReports
+     * @param array<string, array{label: string, roomName: string, roomId: string}> $deskMap
+     * @return array<int, array<string, string|bool>>
+     */
+    private function mapOpenIssueReports(array $issueReports, array $deskMap): array
+    {
+        $items = [];
+
+        foreach ($issueReports as $issueReport) {
+            if (!$issueReport->isOpen()) {
+                continue;
+            }
+
+            $items[] = [
+                'id' => $issueReport->id(),
+                'category' => $this->translateIssueCategory($issueReport->category()),
+                'target' => $issueReport->deskId() !== null
+                    ? (($deskMap[$issueReport->deskId()]['label'] ?? $issueReport->deskId()).' / '.($deskMap[$issueReport->deskId()]['roomName'] ?? ''))
+                    : (string) ($issueReport->roomId() ?? ''),
+                'description' => $issueReport->description(),
+                'reportedAt' => $issueReport->reportedAt()->format('Y-m-d H:i'),
+                'isDeskIssue' => $issueReport->deskId() !== null,
             ];
         }
 
