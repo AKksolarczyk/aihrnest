@@ -95,9 +95,8 @@ final class DashboardController extends AbstractController
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
     }
 
-    #[Route('/admin/desks/{deskId}/label', name: 'app_admin_desk_label_update', methods: ['POST'])]
-    public function updateDeskLabel(
-        string $deskId,
+    #[Route('/admin/desks/labels', name: 'app_admin_desk_label_update', methods: ['POST'])]
+    public function updateDeskLabels(
         Request $request,
         SessionInterface $session,
         OfficeLayoutRepositoryInterface $officeLayoutRepository,
@@ -109,21 +108,36 @@ final class DashboardController extends AbstractController
 
         $date = $request->request->getString('date', date('Y-m-d'));
         $activeUserId = $request->request->getString('activeUserId');
+        $activeTab = $request->request->getString('tab', 'admin-desks');
 
         try {
-            $label = $request->request->getString('label');
+            /** @var array<string, mixed> $labels */
+            $labels = $request->request->all('labels');
             $deskMap = $workspacePlanner->buildDeskMap($officeLayoutRepository->findAllRooms());
+            $updatedDesks = 0;
 
-            if (!isset($deskMap[$deskId])) {
-                throw new InvalidArgumentException('Wybrane biurko nie istnieje.');
+            foreach ($labels as $deskId => $label) {
+                if (!is_string($deskId) || !is_scalar($label)) {
+                    continue;
+                }
+
+                if (!isset($deskMap[$deskId])) {
+                    throw new InvalidArgumentException('Wybrane biurko nie istnieje.');
+                }
+
+                $deskLabel = $deskLabelRepository->findByDeskId($deskId) ?? new DeskLabel($deskId, (string) $label);
+                $deskLabel->rename((string) $label);
+                $deskLabelRepository->save($deskLabel);
+                $updatedDesks += 1;
             }
 
-            $deskLabel = $deskLabelRepository->findByDeskId($deskId) ?? new DeskLabel($deskId, $label);
-            $deskLabel->rename($label);
-            $deskLabelRepository->save($deskLabel);
+            if ($updatedDesks === 0) {
+                throw new InvalidArgumentException('Nie przeslano zadnych nazw biurek do zapisania.');
+            }
+
             $transaction->flush();
 
-            $session->getFlashBag()->add('success', sprintf('Nazwa biurka %s zostala zaktualizowana.', $deskId));
+            $session->getFlashBag()->add('success', sprintf('Zaktualizowano nazwy %d biurek.', $updatedDesks));
         } catch (Throwable $exception) {
             $session->getFlashBag()->add('error', $exception->getMessage());
         }
@@ -132,7 +146,10 @@ final class DashboardController extends AbstractController
             $session->set('active_user_id', $activeUserId);
         }
 
-        return $this->redirectToRoute('app_dashboard', ['date' => $date]);
+        return $this->redirectToRoute('app_dashboard', [
+            'date' => $date,
+            'tab' => $activeTab,
+        ]);
     }
 
     private function resolveDate(string $rawDate): DateTimeImmutable
