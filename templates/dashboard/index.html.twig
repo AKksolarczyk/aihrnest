@@ -92,6 +92,13 @@
             margin-top: 4px;
         }
 
+        .tab small {
+            display: block;
+            font-size: 0.78rem;
+            margin-top: 8px;
+            opacity: 0.9;
+        }
+
         .hero {
             display: grid;
             gap: 20px;
@@ -324,12 +331,27 @@
                 <div class="eyebrow">DeskFlow / aktywny profil</div>
                 <div class="tabs" aria-label="Zakladki uzytkownikow">
                     {% for user in users %}
+                        {% set tabStatus = null %}
+                        {% for status in userStatuses %}
+                            {% if status.id == user.id %}
+                                {% set tabStatus = status %}
+                            {% endif %}
+                        {% endfor %}
                         <form class="tab" method="post" action="{{ path('app_active_user') }}">
                             <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
                             <input type="hidden" name="userId" value="{{ user.id }}">
                             <button type="submit" class="{% if activeUser and activeUser.id == user.id %}active{% endif %}">
                                 <strong>{{ user.name }}</strong>
                                 <span>{{ user.team }}</span>
+                                <small>
+                                    {% if tabStatus and tabStatus.isOnVacation %}
+                                        Dzisiaj urlop
+                                    {% elseif tabStatus and tabStatus.deskLabel %}
+                                        Biurko dzisiaj: {{ tabStatus.deskLabel }}
+                                    {% else %}
+                                        Dzisiaj bez biurka
+                                    {% endif %}
+                                </small>
                             </button>
                         </form>
                     {% endfor %}
@@ -340,6 +362,15 @@
                 <article class="panel">
                     <div class="eyebrow">Profil dnia</div>
                     <h1>{{ activeUser.name }}</h1>
+                    <p class="muted">
+                        {% if activeUserStatus.isOnVacation %}
+                            Dzisiaj jest na urlopie i nie zajmuje biurka.
+                        {% elseif activeUserStatus.deskLabel %}
+                            Dzisiaj zajmuje biurko {{ activeUserStatus.deskLabel }}.
+                        {% else %}
+                            Dzisiaj nie ma zajetego biurka.
+                        {% endif %}
+                    </p>
                     <p class="lead">
                         Widok skupia sie na jednym aktywnym uzytkowniku. Widzisz jego dzisiejszy status, stale biurko,
                         plan obecnosci i akcje, ktore mozesz wykonac bez przelaczania sie na widok calej listy osob.
@@ -473,23 +504,33 @@
 
                     <article class="panel">
                         <div class="eyebrow">Zakladka: akcje</div>
-                        <h2>Zajmij wolne biurko</h2>
-                        <p class="muted">Akcja powiedzie sie tylko wtedy, gdy aktywny uzytkownik nie ma jeszcze miejsca w tym dniu.</p>
-                        <form method="post" action="{{ path('app_desk_claim') }}">
-                            <input type="hidden" name="userId" value="{{ activeUser.id }}">
-                            <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
-                            <label>
-                                Wolne biurko
-                                <select name="deskId" required>
-                                    {% for desk in availableDesks %}
-                                        <option value="{{ desk.id }}">{{ desk.label }} / {{ desk.roomName }}</option>
-                                    {% else %}
-                                        <option value="">Brak wolnych biurek</option>
-                                    {% endfor %}
-                                </select>
-                            </label>
-                            <button type="submit" {% if availableDesks is empty %}disabled{% endif %}>Zajmij stanowisko</button>
-                        </form>
+                        <h2>Przypisz biurko na ten dzien</h2>
+                        {% if activeUserStatus.isOnVacation %}
+                            <p class="muted">Uzytkownik jest na urlopie, dlatego nie mozna przypisac mu biurka.</p>
+                        {% elseif activeUserStatus.deskLabel %}
+                            <p class="muted">To biurko jest juz zajete przez aktywnego uzytkownika w wybranym dniu.</p>
+                            <div class="meta-item">
+                                <strong>Aktualnie zajete biurko</strong>
+                                <div class="muted">{{ activeUserStatus.deskLabel }} / {{ activeUserStatus.statusLabel }}</div>
+                            </div>
+                        {% else %}
+                            <p class="muted">Uzytkownik nie ma przypisanego biurka na wybrany dzien, wiec mozesz przypisac mu jedno z wolnych miejsc.</p>
+                            <form method="post" action="{{ path('app_desk_claim') }}">
+                                <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                                <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                <label>
+                                    Wolne biurko
+                                    <select name="deskId" required>
+                                        {% for desk in availableDesks %}
+                                            <option value="{{ desk.id }}">{{ desk.label }} / {{ desk.roomName }}</option>
+                                        {% else %}
+                                            <option value="">Brak wolnych biurek</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                                <button type="submit" {% if availableDesks is empty %}disabled{% endif %}>Przypisz i zajmij biurko</button>
+                            </form>
+                        {% endif %}
                     </article>
 
                     <article class="panel">

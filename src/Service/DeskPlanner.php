@@ -40,6 +40,7 @@ final class DeskPlanner
             'activeUser' => $users[$activeUserId] ?? null,
             'activeUserStatus' => $activeUserStatus,
             'users' => array_values($users),
+            'userStatuses' => $userStatuses,
             'rooms' => $rooms,
             'weekOverview' => $weekOverview,
             'availableDesks' => $dailyPlan['availableDesks'],
