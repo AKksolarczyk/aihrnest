@@ -4,6 +4,19 @@ namespace App\Service;
 
 final class FileStateStore
 {
+    private const DEFAULT_VACATION_DAYS = 26;
+
+    /**
+     * @var array<string, array<int, string>>
+     */
+    private const DEFAULT_USER_SCHEDULES = [
+        'u1' => ['monday', 'tuesday', 'thursday'],
+        'u2' => ['monday', 'wednesday', 'friday'],
+        'u3' => ['tuesday', 'thursday', 'friday'],
+        'u4' => ['monday', 'wednesday', 'thursday'],
+        'u5' => ['tuesday', 'wednesday', 'friday'],
+    ];
+
     public function __construct(
         private readonly string $projectDir,
     ) {
@@ -33,7 +46,13 @@ final class FileStateStore
             return $state;
         }
 
-        return $data;
+        $normalizedState = $this->normalizeState($data);
+
+        if ($normalizedState !== $data) {
+            $this->save($normalizedState);
+        }
+
+        return $normalizedState;
     }
 
     /**
@@ -68,53 +87,74 @@ final class FileStateStore
                     'name' => 'Anna Kowalska',
                     'team' => 'Product',
                     'assignedDeskId' => 'A-01',
-                    'schedule' => ['monday', 'tuesday', 'thursday'],
+                    'schedule' => self::DEFAULT_USER_SCHEDULES['u1'],
+                    'vacationDaysTotal' => self::DEFAULT_VACATION_DAYS,
+                    'vacationDaysRemaining' => self::DEFAULT_VACATION_DAYS,
                 ],
                 [
                     'id' => 'u2',
                     'name' => 'Piotr Nowak',
                     'team' => 'Operations',
                     'assignedDeskId' => 'A-02',
-                    'schedule' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                    'schedule' => self::DEFAULT_USER_SCHEDULES['u2'],
+                    'vacationDaysTotal' => self::DEFAULT_VACATION_DAYS,
+                    'vacationDaysRemaining' => self::DEFAULT_VACATION_DAYS,
                 ],
                 [
                     'id' => 'u3',
                     'name' => 'Marta Zielinska',
                     'team' => 'Sales',
                     'assignedDeskId' => 'B-01',
-                    'schedule' => ['wednesday', 'thursday', 'friday'],
+                    'schedule' => self::DEFAULT_USER_SCHEDULES['u3'],
+                    'vacationDaysTotal' => self::DEFAULT_VACATION_DAYS,
+                    'vacationDaysRemaining' => self::DEFAULT_VACATION_DAYS,
                 ],
                 [
                     'id' => 'u4',
                     'name' => 'Tomasz Wisniewski',
                     'team' => 'Engineering',
                     'assignedDeskId' => 'C-01',
-                    'schedule' => ['tuesday', 'wednesday'],
+                    'schedule' => self::DEFAULT_USER_SCHEDULES['u4'],
+                    'vacationDaysTotal' => self::DEFAULT_VACATION_DAYS,
+                    'vacationDaysRemaining' => self::DEFAULT_VACATION_DAYS,
                 ],
                 [
                     'id' => 'u5',
                     'name' => 'Julia Kaczmarek',
                     'team' => 'HR',
                     'assignedDeskId' => 'C-02',
-                    'schedule' => ['monday', 'thursday'],
+                    'schedule' => self::DEFAULT_USER_SCHEDULES['u5'],
+                    'vacationDaysTotal' => self::DEFAULT_VACATION_DAYS,
+                    'vacationDaysRemaining' => self::DEFAULT_VACATION_DAYS,
                 ],
             ],
-            'vacations' => [
-                [
-                    'id' => 'vac-1',
-                    'userId' => 'u3',
-                    'startDate' => '2026-03-30',
-                    'endDate' => '2026-04-01',
-                ],
-            ],
-            'deskClaims' => [
-                [
-                    'id' => 'claim-1',
-                    'userId' => 'u5',
-                    'deskId' => 'B-04',
-                    'date' => '2026-03-31',
-                ],
-            ],
+            'vacations' => [],
+            'deskClaims' => [],
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $state
+     * @return array<string, mixed>
+     */
+    private function normalizeState(array $state): array
+    {
+        $state['users'] = array_map(function (array $user): array {
+            $userId = $user['id'] ?? '';
+            $defaultSchedule = self::DEFAULT_USER_SCHEDULES[$userId] ?? ['monday', 'wednesday', 'friday'];
+            $vacationDaysTotal = (int) ($user['vacationDaysTotal'] ?? self::DEFAULT_VACATION_DAYS);
+            $vacationDaysRemaining = (int) ($user['vacationDaysRemaining'] ?? $vacationDaysTotal);
+
+            $user['schedule'] = $defaultSchedule;
+            $user['vacationDaysTotal'] = $vacationDaysTotal;
+            $user['vacationDaysRemaining'] = max(0, min($vacationDaysRemaining, $vacationDaysTotal));
+
+            return $user;
+        }, $state['users'] ?? []);
+
+        $state['vacations'] = array_values($state['vacations'] ?? []);
+        $state['deskClaims'] = array_values($state['deskClaims'] ?? []);
+
+        return $state;
     }
 }
