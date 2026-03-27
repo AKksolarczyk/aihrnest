@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace App\Workspace\Application\Command\RequestVacation;
 
 use App\Workspace\Domain\Model\Vacation;
-use App\Workspace\Domain\Repository\WorkspaceStateRepositoryInterface;
+use App\Workspace\Domain\Repository\UserRepositoryInterface;
+use App\Workspace\Domain\Repository\VacationRepositoryInterface;
+use App\Workspace\Domain\Repository\WorkspaceTransactionInterface;
 use App\Workspace\Domain\Service\BusinessDayCounter;
 use InvalidArgumentException;
 
 final class RequestVacationHandler
 {
     public function __construct(
-        private readonly WorkspaceStateRepositoryInterface $workspaceStateRepository,
+        private readonly UserRepositoryInterface $userRepository,
+        private readonly VacationRepositoryInterface $vacationRepository,
+        private readonly WorkspaceTransactionInterface $workspaceTransaction,
         private readonly BusinessDayCounter $businessDayCounter,
     ) {
     }
@@ -23,8 +27,7 @@ final class RequestVacationHandler
             throw new InvalidArgumentException('Data koncowa urlopu nie moze byc wczesniejsza niz poczatkowa.');
         }
 
-        $workspaceState = $this->workspaceStateRepository->load();
-        $user = $workspaceState->findUser($command->userId);
+        $user = $this->userRepository->findById($command->userId);
 
         if ($user === null) {
             throw new InvalidArgumentException('Nie znaleziono wskazanego uzytkownika.');
@@ -37,13 +40,13 @@ final class RequestVacationHandler
         }
 
         $user->consumeVacationDays($requestedDays);
-        $workspaceState->addVacation(new Vacation(
+        $this->userRepository->save($user);
+        $this->vacationRepository->add(new Vacation(
             sprintf('vac-%s', bin2hex(random_bytes(4))),
             $command->userId,
             $command->startDate,
             $command->endDate,
         ));
-
-        $this->workspaceStateRepository->save($workspaceState);
+        $this->workspaceTransaction->flush();
     }
 }

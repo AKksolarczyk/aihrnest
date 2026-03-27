@@ -5,20 +5,32 @@ declare(strict_types=1);
 namespace App\Workspace\Domain\Model;
 
 use DateTimeImmutable;
+use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 
+#[ORM\Entity]
+#[ORM\Table(name: 'workspace_users')]
 final class User
 {
     /**
      * @param list<string> $schedule
      */
     public function __construct(
+        #[ORM\Id]
+        #[ORM\Column(type: 'string', length: 32)]
         private string $id,
+        #[ORM\Column(type: 'string', length: 255)]
         private string $name,
+        #[ORM\Column(type: 'string', length: 255)]
         private string $team,
+        #[ORM\Column(type: 'string', length: 32)]
         private string $assignedDeskId,
+        /** @var list<string> */
+        #[ORM\Column(type: 'json')]
         private array $schedule,
+        #[ORM\Column(type: 'integer')]
         private int $vacationDaysTotal,
+        #[ORM\Column(type: 'integer')]
         private int $vacationDaysRemaining,
     ) {
         if ($this->id === '') {

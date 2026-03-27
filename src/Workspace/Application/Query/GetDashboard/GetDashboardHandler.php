@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Workspace\Application\Query\GetDashboard;
 
+use App\Workspace\Domain\Model\DeskClaim;
 use App\Workspace\Domain\Model\Room;
 use App\Workspace\Domain\Model\User;
-use App\Workspace\Domain\Model\WorkspaceState;
+use App\Workspace\Domain\Model\Vacation;
+use App\Workspace\Domain\Repository\DeskClaimRepositoryInterface;
 use App\Workspace\Domain\Repository\OfficeLayoutRepositoryInterface;
-use App\Workspace\Domain\Repository\WorkspaceStateRepositoryInterface;
+use App\Workspace\Domain\Repository\UserRepositoryInterface;
+use App\Workspace\Domain\Repository\VacationRepositoryInterface;
 use App\Workspace\Domain\Service\DailyPlan;
 use App\Workspace\Domain\Service\WorkspacePlanner;
 use DateInterval;
@@ -16,7 +19,9 @@ use DateInterval;
 final class GetDashboardHandler
 {
     public function __construct(
-        private readonly WorkspaceStateRepositoryInterface $workspaceStateRepository,
+        private readonly UserRepositoryInterface $userRepository,
+        private readonly VacationRepositoryInterface $vacationRepository,
+        private readonly DeskClaimRepositoryInterface $deskClaimRepository,
         private readonly OfficeLayoutRepositoryInterface $officeLayoutRepository,
         private readonly WorkspacePlanner $workspacePlanner,
     ) {
@@ -24,12 +29,13 @@ final class GetDashboardHandler
 
     public function handle(GetDashboardQuery $query): DashboardView
     {
-        $workspaceState = $this->workspaceStateRepository->load();
-        $users = $this->indexUsers($workspaceState);
+        $users = $this->indexUsers($this->userRepository->findAllOrderedByName());
+        $vacations = $this->vacationRepository->findAll();
+        $deskClaims = $this->deskClaimRepository->findAll();
         $rooms = $this->officeLayoutRepository->findAllRooms();
         $deskMap = $this->workspacePlanner->buildDeskMap($rooms);
         $activeUserId = isset($users[$query->activeUserId]) ? $query->activeUserId : (array_key_first($users) ?? '');
-        $dailyPlan = $this->workspacePlanner->buildDailyPlan($query->selectedDate, $workspaceState, $rooms);
+        $dailyPlan = $this->workspacePlanner->buildDailyPlan($query->selectedDate, array_values($users), $vacations, $deskClaims, $rooms);
         $userStatuses = $this->buildUserStatuses($query->selectedDate, $users, $deskMap, $dailyPlan);
 
         return new DashboardView(
@@ -39,10 +45,10 @@ final class GetDashboardHandler
             array_map(fn (User $user): array => $this->mapUser($user), array_values($users)),
             $userStatuses,
             $this->buildRoomsView($rooms, $dailyPlan, $deskMap),
-            $this->buildWeekOverview($query->selectedDate, $workspaceState, $rooms),
+            $this->buildWeekOverview($query->selectedDate, array_values($users), $vacations, $deskClaims, $rooms),
             $dailyPlan->availableDesks(),
-            $this->buildVacationsViewForUser($workspaceState, $activeUserId, $users),
-            $this->buildDeskClaimsViewForUser($workspaceState, $activeUserId, $users, $deskMap),
+            $this->buildVacationsViewForUser($vacations, $activeUserId, $users),
+            $this->buildDeskClaimsViewForUser($deskClaims, $activeUserId, $users, $deskMap),
             [
                 'occupiedCount' => count($dailyPlan->occupancy()),
                 'freeCount' => count($dailyPlan->availableDesks()),
@@ -57,11 +63,11 @@ final class GetDashboardHandler
     /**
      * @return array<string, User>
      */
-    private function indexUsers(WorkspaceState $workspaceState): array
+    private function indexUsers(array $users): array
     {
         $indexed = [];
 
-        foreach ($workspaceState->users() as $user) {
+        foreach ($users as $user) {
             $indexed[$user->id()] = $user;
         }
 
@@ -159,13 +165,13 @@ final class GetDashboardHandler
      * @param list<Room> $rooms
      * @return array<int, array<string, mixed>>
      */
-    private function buildWeekOverview(\DateTimeImmutable $selectedDate, WorkspaceState $workspaceState, array $rooms): array
+    private function buildWeekOverview(\DateTimeImmutable $selectedDate, array $users, array $vacations, array $deskClaims, array $rooms): array
     {
         $days = [];
 
         for ($offset = 0; $offset < 5; ++$offset) {
             $day = $selectedDate->add(new DateInterval(sprintf('P%dD', $offset)));
-            $plan = $this->workspacePlanner->buildDailyPlan($day, $workspaceState, $rooms);
+            $plan = $this->workspacePlanner->buildDailyPlan($day, $users, $vacations, $deskClaims, $rooms);
             $days[] = [
                 'date' => $day,
                 'occupiedCount' => count($plan->occupancy()),
@@ -181,10 +187,10 @@ final class GetDashboardHandler
      * @param array<string, User> $users
      * @return array<int, array<string, string>>
      */
-    private function buildVacationsViewForUser(WorkspaceState $workspaceState, string $userId, array $users): array
+    private function buildVacationsViewForUser(array $vacations, string $userId, array $users): array
     {
         $vacations = array_values(array_filter(
-            $workspaceState->vacations(),
+            $vacations,
             static fn ($vacation): bool => $vacation->userId() === $userId,
         ));
 
@@ -207,10 +213,10 @@ final class GetDashboardHandler
      * @param array<string, array{label: string, roomName: string, roomId: string}> $deskMap
      * @return array<int, array<string, string>>
      */
-    private function buildDeskClaimsViewForUser(WorkspaceState $workspaceState, string $userId, array $users, array $deskMap): array
+    private function buildDeskClaimsViewForUser(array $deskClaims, string $userId, array $users, array $deskMap): array
     {
         $claims = array_values(array_filter(
-            $workspaceState->deskClaims(),
+            $deskClaims,
             static fn ($claim): bool => $claim->userId() === $userId,
         ));
 

@@ -7,11 +7,12 @@ Aktualny moduł jest podzielony na warstwy:
 - `Application`:
   commandy, query i ich handlery
 - `Infrastructure`:
-  implementacje repozytoriów plikowych i statyczny layout biura
+  implementacje repozytoriów Doctrine i statyczny layout biura
 - `UI`:
   kontrolery HTTP
 
 Zasady:
 - kontroler wywoluje command albo query handler
 - aplikacja korzysta z interfejsow repozytoriow
-- domena nie zna Symfony ani szczegolow zapisu do pliku
+- domena akceptuje atrybuty Doctrine w modelach
+- logika biznesowa nie trafia do repozytoriow ani kontrolerow
