@@ -43,7 +43,9 @@ final class AppFixtures extends Fixture
         foreach ($rows as [$id, $name, $email, $team, $deskId, $schedule]) {
             $temporaryUser = User::register($id, $name, $email, $team, 'temporary-hash', $deskId, $schedule);
             $hashedPassword = $this->passwordHasher->hashPassword($temporaryUser, 'password123');
-            $users[] = User::register($id, $name, $email, $team, $hashedPassword, $deskId, $schedule);
+            $user = User::register($id, $name, $email, $team, $hashedPassword, $deskId, $schedule);
+            $user->activate();
+            $users[] = $user;
         }
 
         return $users;

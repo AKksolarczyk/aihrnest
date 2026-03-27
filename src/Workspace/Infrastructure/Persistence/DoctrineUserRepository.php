@@ -28,6 +28,16 @@ final class DoctrineUserRepository implements UserRepositoryInterface
         return $user;
     }
 
+    public function findByEmailConfirmationToken(string $token): ?User
+    {
+        /** @var ?User $user */
+        $user = $this->entityManager->getRepository(User::class)->findOneBy([
+            'emailConfirmationToken' => $token,
+        ]);
+
+        return $user;
+    }
+
     public function findAllOrderedByName(): array
     {
         /** @var list<User> $users */

@@ -24,6 +24,8 @@ services:
       APP_SECRET: local-dev-secret
       DEFAULT_URI: http://smartdesk.localhost
       DATABASE_URL: postgresql://app:app@postgres:5432/app?serverVersion=16&charset=utf8
+      MAILER_DSN: smtp://mailpit:1025
+      MAILER_FROM: no-reply@smartdesk.local
     volumes:
       - ./:/app
       - composer_cache:/tmp/composer-cache
@@ -35,6 +37,7 @@ services:
     depends_on:
       - traefik
       - postgres
+      - mailpit
 
 ###> doctrine/doctrine-bundle ###
   postgres:
@@ -53,6 +56,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data:rw
 ###< doctrine/doctrine-bundle ###
+
+  mailpit:
+    image: axllent/mailpit:v1.26
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    labels:
+      traefik.enable: "true"
+
+      traefik.http.routers.mailpit.rule: Host(`mailpit.localhost`)
+      traefik.http.routers.mailpit.entrypoints: web
+      traefik.http.services.mailpit.loadbalancer.server.port: "8025"
 
 volumes:
   composer_cache:
