@@ -1,13 +1,22 @@
 <?php
 
-namespace App\Service;
+declare(strict_types=1);
 
-final class FileStateStore
+namespace App\Workspace\Infrastructure\Persistence;
+
+use App\Workspace\Domain\Model\DeskClaim;
+use App\Workspace\Domain\Model\User;
+use App\Workspace\Domain\Model\Vacation;
+use App\Workspace\Domain\Model\WorkspaceState;
+use App\Workspace\Domain\Repository\WorkspaceStateRepositoryInterface;
+use DateTimeImmutable;
+
+final class FileWorkspaceStateRepository implements WorkspaceStateRepositoryInterface
 {
     private const DEFAULT_VACATION_DAYS = 26;
 
     /**
-     * @var array<string, array<int, string>>
+     * @var array<string, list<string>>
      */
     private const DEFAULT_USER_SCHEDULES = [
         'u1' => ['monday', 'tuesday', 'thursday'],
@@ -22,10 +31,7 @@ final class FileStateStore
     ) {
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function load(): array
+    public function load(): WorkspaceState
     {
         $path = $this->getPath();
 
@@ -46,28 +52,26 @@ final class FileStateStore
             return $state;
         }
 
-        $normalizedState = $this->normalizeState($data);
+        $normalized = $this->normalizeState($data);
+        $workspaceState = $this->hydrate($normalized);
 
-        if ($normalizedState !== $data) {
-            $this->save($normalizedState);
+        if ($normalized !== $data) {
+            $this->save($workspaceState);
         }
 
-        return $normalizedState;
+        return $workspaceState;
     }
 
-    /**
-     * @param array<string, mixed> $state
-     */
-    public function save(array $state): void
+    public function save(WorkspaceState $workspaceState): void
     {
         $path = $this->getPath();
-        $directory = \dirname($path);
+        $directory = dirname($path);
 
         if (!is_dir($directory)) {
             mkdir($directory, 0777, true);
         }
 
-        file_put_contents($path, json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+        file_put_contents($path, json_encode($this->extract($workspaceState), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
     }
 
     private function getPath(): string
@@ -75,12 +79,9 @@ final class FileStateStore
         return $this->projectDir.'/var/data/app-state.json';
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function getDefaultState(): array
+    private function getDefaultState(): WorkspaceState
     {
-        return [
+        return $this->hydrate([
             'users' => [
                 [
                     'id' => 'u1',
@@ -130,7 +131,7 @@ final class FileStateStore
             ],
             'vacations' => [],
             'deskClaims' => [],
-        ];
+        ]);
     }
 
     /**
@@ -140,7 +141,7 @@ final class FileStateStore
     private function normalizeState(array $state): array
     {
         $state['users'] = array_map(function (array $user): array {
-            $userId = $user['id'] ?? '';
+            $userId = (string) ($user['id'] ?? '');
             $defaultSchedule = self::DEFAULT_USER_SCHEDULES[$userId] ?? ['monday', 'wednesday', 'friday'];
             $vacationDaysTotal = (int) ($user['vacationDaysTotal'] ?? self::DEFAULT_VACATION_DAYS);
             $vacationDaysRemaining = (int) ($user['vacationDaysRemaining'] ?? $vacationDaysTotal);
@@ -156,5 +157,67 @@ final class FileStateStore
         $state['deskClaims'] = array_values($state['deskClaims'] ?? []);
 
         return $state;
+    }
+
+    /**
+     * @param array<string, mixed> $state
+     */
+    private function hydrate(array $state): WorkspaceState
+    {
+        $users = array_map(static fn (array $user): User => new User(
+            (string) $user['id'],
+            (string) $user['name'],
+            (string) $user['team'],
+            (string) $user['assignedDeskId'],
+            array_values($user['schedule']),
+            (int) $user['vacationDaysTotal'],
+            (int) $user['vacationDaysRemaining'],
+        ), $state['users'] ?? []);
+
+        $vacations = array_map(static fn (array $vacation): Vacation => new Vacation(
+            (string) $vacation['id'],
+            (string) $vacation['userId'],
+            new DateTimeImmutable((string) $vacation['startDate']),
+            new DateTimeImmutable((string) $vacation['endDate']),
+        ), $state['vacations'] ?? []);
+
+        $deskClaims = array_map(static fn (array $deskClaim): DeskClaim => new DeskClaim(
+            (string) $deskClaim['id'],
+            (string) $deskClaim['userId'],
+            (string) $deskClaim['deskId'],
+            new DateTimeImmutable((string) $deskClaim['date']),
+        ), $state['deskClaims'] ?? []);
+
+        return new WorkspaceState($users, $vacations, $deskClaims);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function extract(WorkspaceState $workspaceState): array
+    {
+        return [
+            'users' => array_map(static fn (User $user): array => [
+                'id' => $user->id(),
+                'name' => $user->name(),
+                'team' => $user->team(),
+                'assignedDeskId' => $user->assignedDeskId(),
+                'schedule' => $user->schedule(),
+                'vacationDaysTotal' => $user->vacationDaysTotal(),
+                'vacationDaysRemaining' => $user->vacationDaysRemaining(),
+            ], $workspaceState->users()),
+            'vacations' => array_map(static fn (Vacation $vacation): array => [
+                'id' => $vacation->id(),
+                'userId' => $vacation->userId(),
+                'startDate' => $vacation->startDate()->format('Y-m-d'),
+                'endDate' => $vacation->endDate()->format('Y-m-d'),
+            ], $workspaceState->vacations()),
+            'deskClaims' => array_map(static fn (DeskClaim $deskClaim): array => [
+                'id' => $deskClaim->id(),
+                'userId' => $deskClaim->userId(),
+                'deskId' => $deskClaim->deskId(),
+                'date' => $deskClaim->date()->format('Y-m-d'),
+            ], $workspaceState->deskClaims()),
+        ];
     }
 }

@@ -1,8 +1,15 @@
 <?php
 
-namespace App\Controller;
+declare(strict_types=1);
 
-use App\Service\DeskPlanner;
+namespace App\Workspace\UI\Http\Controller;
+
+use App\Workspace\Application\Command\ClaimDesk\ClaimDeskCommand;
+use App\Workspace\Application\Command\ClaimDesk\ClaimDeskHandler;
+use App\Workspace\Application\Command\RequestVacation\RequestVacationCommand;
+use App\Workspace\Application\Command\RequestVacation\RequestVacationHandler;
+use App\Workspace\Application\Query\GetDashboard\GetDashboardHandler;
+use App\Workspace\Application\Query\GetDashboard\GetDashboardQuery;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -15,13 +22,13 @@ use Throwable;
 final class DashboardController extends AbstractController
 {
     #[Route('/', name: 'app_dashboard', methods: ['GET'])]
-    public function index(Request $request, SessionInterface $session, DeskPlanner $deskPlanner): Response
+    public function index(Request $request, SessionInterface $session, GetDashboardHandler $handler): Response
     {
         $selectedDate = $this->resolveDate($request->query->getString('date'));
         $activeUserId = $session->get('active_user_id', 'u1');
-        $dashboard = $deskPlanner->getDashboardData($selectedDate, $activeUserId);
+        $dashboardView = $handler->handle(new GetDashboardQuery($selectedDate, $activeUserId));
 
-        return $this->render('dashboard/index.html.twig', $dashboard);
+        return $this->render('dashboard/index.html.twig', $dashboardView->toArray());
     }
 
     #[Route('/active-user', name: 'app_active_user', methods: ['POST'])]
@@ -35,16 +42,19 @@ final class DashboardController extends AbstractController
     }
 
     #[Route('/vacations', name: 'app_vacation_request', methods: ['POST'])]
-    public function requestVacation(Request $request, SessionInterface $session, DeskPlanner $deskPlanner): RedirectResponse
-    {
+    public function requestVacation(
+        Request $request,
+        SessionInterface $session,
+        RequestVacationHandler $handler,
+    ): RedirectResponse {
         $date = $request->request->getString('date', date('Y-m-d'));
 
         try {
-            $deskPlanner->requestVacation(
+            $handler->handle(new RequestVacationCommand(
                 $request->request->getString('userId'),
                 new DateTimeImmutable($request->request->getString('startDate')),
-                new DateTimeImmutable($request->request->getString('endDate'))
-            );
+                new DateTimeImmutable($request->request->getString('endDate')),
+            ));
 
             $session->getFlashBag()->add('success', 'Urlop zostal zapisany, a przypisane biurko zostanie zwolnione.');
         } catch (Throwable $exception) {
@@ -55,16 +65,19 @@ final class DashboardController extends AbstractController
     }
 
     #[Route('/claims', name: 'app_desk_claim', methods: ['POST'])]
-    public function claimDesk(Request $request, SessionInterface $session, DeskPlanner $deskPlanner): RedirectResponse
-    {
+    public function claimDesk(
+        Request $request,
+        SessionInterface $session,
+        ClaimDeskHandler $handler,
+    ): RedirectResponse {
         $date = $request->request->getString('date', date('Y-m-d'));
 
         try {
-            $deskPlanner->claimDesk(
+            $handler->handle(new ClaimDeskCommand(
                 $request->request->getString('userId'),
                 $request->request->getString('deskId'),
-                new DateTimeImmutable($date)
-            );
+                new DateTimeImmutable($date),
+            ));
 
             $session->getFlashBag()->add('success', 'Wolne biurko zostalo zajete.');
         } catch (Throwable $exception) {

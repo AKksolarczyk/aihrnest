@@ -20,6 +20,14 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+        exclude:
+            - '../src/Kernel.php'
+
+    App\Workspace\Domain\Repository\WorkspaceStateRepositoryInterface:
+        alias: App\Workspace\Infrastructure\Persistence\FileWorkspaceStateRepository
+
+    App\Workspace\Domain\Repository\OfficeLayoutRepositoryInterface:
+        alias: App\Workspace\Infrastructure\OfficeLayout\StaticOfficeLayoutRepository
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
