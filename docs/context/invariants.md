@@ -31,6 +31,24 @@ Ten dokument opisuje warunki, ktore system musi chronic w modelu domenowym i use
 - Nie mozna zapisac zajecia nieistniejacego biurka.
 - Nie mozna skutecznie zajac biurka, ktore jest juz zajete na ten sam dzien.
 
+## DeskWaitlistEntry
+
+- `id`, `userId` i `deskId` wpisu waitlisty nie moga byc puste.
+- Waitlista musi miec poprawny status domenowy.
+- Nie mozna miec dwoch aktywnych wpisow waitlisty dla tego samego uzytkownika, biurka i dnia.
+
+## RecurringDeskReservation
+
+- `id`, `userId` i `deskId` rezerwacji cyklicznej nie moga byc puste.
+- `endDate` nie moze byc wczesniejsze niz `startDate`.
+- Rezerwacja cykliczna musi zawierac co najmniej jeden dzien tygodnia.
+
+## IssueReport
+
+- `id`, `userId` i `category` zgloszenia nie moga byc puste.
+- Zgloszenie musi wskazywac biurko albo pomieszczenie.
+- Opis zgloszenia nie moze byc pusty.
+
 ## Use case'y
 
 - Command zapisujacy nie moze zostawic systemu w stanie czesciowo zmienionym.

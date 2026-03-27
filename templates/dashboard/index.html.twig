@@ -733,6 +733,64 @@
             display: block;
         }
 
+        .finder-search,
+        .report-grid,
+        .report-list,
+        .compact-list,
+        .day-picker {
+            display: grid;
+            gap: 14px;
+        }
+
+        .report-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .report-card {
+            padding: 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(47, 124, 246, 0.12);
+            background: rgba(255, 255, 255, 0.82);
+        }
+
+        .report-card strong {
+            display: block;
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+        }
+
+        .compact-item {
+            padding: 14px 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(47, 124, 246, 0.12);
+            background: rgba(255, 255, 255, 0.82);
+        }
+
+        .compact-item strong,
+        .compact-item span {
+            display: block;
+        }
+
+        .compact-item span {
+            margin-top: 4px;
+        }
+
+        .people-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .people-card {
+            padding: 18px;
+            border-radius: 22px;
+            border: 1px solid rgba(47, 124, 246, 0.12);
+            background: rgba(255, 255, 255, 0.84);
+        }
+
+        .people-card.is-hidden {
+            display: none;
+        }
+
         .admin-desk-form {
             display: grid;
             gap: 12px;
@@ -820,7 +878,8 @@
             .stats,
             .room-grid,
             .row,
-            .admin-desk-form {
+            .admin-desk-form,
+            .report-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -1001,6 +1060,82 @@
                         </article>
 
                         <article class="panel">
+                            <div class="eyebrow">Zakladka: akcje</div>
+                            <h2>Rezerwacja cykliczna</h2>
+                            <form method="post" action="{{ path('app_recurring_desk_claim_create') }}">
+                                <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                                <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                <label>
+                                    Biurko
+                                    <select name="deskId" required>
+                                        {% for desk in deskCatalog %}
+                                            <option value="{{ desk.id }}">{{ desk.label }} / {{ desk.roomName }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                                <div class="day-picker">
+                                    <strong>Dni tygodnia</strong>
+                                    {% for key, label in {monday: 'Pon', tuesday: 'Wt', wednesday: 'Sro', thursday: 'Czw', friday: 'Pt'} %}
+                                        <label class="checkbox">
+                                            <input type="checkbox" name="weekdays[]" value="{{ key }}" {% if key in activeUserStatus.schedule %}checked{% endif %}>
+                                            <span>{{ label }}</span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                                <label>
+                                    Od
+                                    <input type="date" name="startDate" value="{{ selectedDate|date('Y-m-d') }}" required>
+                                </label>
+                                <label>
+                                    Do
+                                    <input type="date" name="endDate" value="{{ selectedDate|date('Y-m-d') }}" required>
+                                </label>
+                                <button type="submit">Utworz rezerwacje cykliczna</button>
+                            </form>
+                        </article>
+
+                        <article class="panel">
+                            <div class="eyebrow">Zakladka: akcje</div>
+                            <h2>Zglos problem</h2>
+                            <form method="post" action="{{ path('app_issue_report_create') }}">
+                                <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                                <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                <label>
+                                    Kategoria
+                                    <select name="category" required>
+                                        <option value="sprzet">Sprzet</option>
+                                        <option value="komfort">Komfort</option>
+                                        <option value="siec">Siec</option>
+                                        <option value="inne">Inne</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Biurko
+                                    <select name="deskId">
+                                        <option value="">Brak</option>
+                                        {% for desk in deskCatalog %}
+                                            <option value="{{ desk.id }}">{{ desk.label }} / {{ desk.roomName }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                                <label>
+                                    Pomieszczenie
+                                    <select name="roomId">
+                                        <option value="">Brak</option>
+                                        {% for room in roomCatalog %}
+                                            <option value="{{ room.id }}">{{ room.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                                <label>
+                                    Opis
+                                    <input type="text" name="description" maxlength="255" required>
+                                </label>
+                                <button type="submit">Wyslij zgloszenie</button>
+                            </form>
+                        </article>
+
+                        <article class="panel">
                             <div class="eyebrow">Zakladka: historia</div>
                             <h2>Historia aktywnego uzytkownika</h2>
 
@@ -1035,6 +1170,54 @@
                                     <p class="muted">Brak dodatkowych zajec biurek dla aktywnego uzytkownika.</p>
                                 {% endfor %}
                             </div>
+
+                            <h3 style="margin-top: 20px;">Waitlista</h3>
+                            <div class="table-like">
+                                {% for entry in deskWaitlist %}
+                                    <div class="row">
+                                        <div>
+                                            <strong>{{ entry.deskLabel }}</strong>
+                                            <div class="muted">{{ entry.roomName }}</div>
+                                        </div>
+                                        <div>{{ entry.date }}</div>
+                                        <div>{{ entry.status }}</div>
+                                    </div>
+                                {% else %}
+                                    <p class="muted">Brak wpisow na waitliscie.</p>
+                                {% endfor %}
+                            </div>
+
+                            <h3 style="margin-top: 20px;">Rezerwacje cykliczne</h3>
+                            <div class="table-like">
+                                {% for reservation in recurringReservations %}
+                                    <div class="row">
+                                        <div>
+                                            <strong>{{ reservation.deskLabel }}</strong>
+                                            <div class="muted">{{ reservation.roomName }} / {{ reservation.weekdays|join(', ') }}</div>
+                                        </div>
+                                        <div>{{ reservation.startDate }}</div>
+                                        <div>{{ reservation.endDate }}</div>
+                                    </div>
+                                {% else %}
+                                    <p class="muted">Brak rezerwacji cyklicznych.</p>
+                                {% endfor %}
+                            </div>
+
+                            <h3 style="margin-top: 20px;">Zgloszone problemy</h3>
+                            <div class="table-like">
+                                {% for issue in issueReports %}
+                                    <div class="row">
+                                        <div>
+                                            <strong>{{ issue.category }}</strong>
+                                            <div class="muted">{{ issue.target }}</div>
+                                        </div>
+                                        <div>{{ issue.status }}</div>
+                                        <div>{{ issue.reportedAt }}</div>
+                                    </div>
+                                {% else %}
+                                    <p class="muted">Brak zgloszen problemow.</p>
+                                {% endfor %}
+                            </div>
                         </article>
                     </div>
                 </div>
@@ -1043,8 +1226,10 @@
                     <div class="content-tabs" aria-label="Glowne zakladki widoku">
                         <button type="button" class="content-tab-button active" data-content-tab-target="desks">Biurka</button>
                         <button type="button" class="content-tab-button" data-content-tab-target="week">Tydzien</button>
+                        <button type="button" class="content-tab-button" data-content-tab-target="people">People finder</button>
                         {% if is_granted('ROLE_ADMIN') %}
                             <button type="button" class="content-tab-button" data-content-tab-target="admin-desks">Edycja biurek</button>
+                            <button type="button" class="content-tab-button" data-content-tab-target="admin-reports">Raporty</button>
                         {% endif %}
                     </div>
 
@@ -1072,6 +1257,14 @@
                                                                 <p>{{ desk.occupancy.userName }}</p>
                                                                 <p class="muted">{{ desk.occupancy.team }}</p>
                                                                 <span class="pill {{ desk.occupancy.type }}">{{ desk.occupancy.label }}</span>
+                                                                {% if not activeUserStatus.isOnVacation and not activeUserStatus.deskLabel and activeUser.id != desk.occupancy.userId %}
+                                                                    <form method="post" action="{{ path('app_desk_waitlist_join') }}">
+                                                                        <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                                                                        <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                                                        <input type="hidden" name="deskId" value="{{ desk.id }}">
+                                                                        <button type="submit" class="desk-action ghost">Dolacz do waitlisty</button>
+                                                                    </form>
+                                                                {% endif %}
                                                             {% else %}
                                                                 <p>Biurko wolne</p>
                                                                 {% if activeUserStatus.isOnVacation %}
@@ -1117,6 +1310,14 @@
                                                                         <p>{{ desk.occupancy.userName }}</p>
                                                                         <p class="muted">{{ desk.occupancy.team }}</p>
                                                                         <span class="pill {{ desk.occupancy.type }}">{{ desk.occupancy.label }}</span>
+                                                                        {% if not activeUserStatus.isOnVacation and not activeUserStatus.deskLabel and activeUser.id != desk.occupancy.userId %}
+                                                                            <form method="post" action="{{ path('app_desk_waitlist_join') }}">
+                                                                                <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                                                                                <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                                                                <input type="hidden" name="deskId" value="{{ desk.id }}">
+                                                                                <button type="submit" class="desk-action ghost">Dolacz do waitlisty</button>
+                                                                            </form>
+                                                                        {% endif %}
                                                                     {% else %}
                                                                         <p>Biurko wolne</p>
                                                                         {% if activeUserStatus.isOnVacation %}
@@ -1165,6 +1366,31 @@
                         </article>
                     </div>
 
+                    <div class="content-tab-panel" data-content-tab="people">
+                        <article class="panel">
+                            <div class="eyebrow">Zakladka: people finder</div>
+                            <h2>Kto jest dzis w biurze</h2>
+                            <div class="finder-search">
+                                <label>
+                                    Szukaj po osobie, zespole albo biurku
+                                    <input type="search" placeholder="Np. Anna, Product, A-01" data-people-search-input>
+                                </label>
+                            </div>
+                            <div class="people-list">
+                                {% for person in peopleFinder %}
+                                    <div class="people-card" data-people-search-item data-people-search-text="{{ (person.name ~ ' ' ~ person.team ~ ' ' ~ person.deskLabel ~ ' ' ~ person.statusLabel)|lower }}">
+                                        <strong>{{ person.name }}</strong>
+                                        <div class="muted">{{ person.team }}</div>
+                                        <div>{{ person.deskLabel }}</div>
+                                        <span class="pill none">{{ person.statusLabel }}</span>
+                                    </div>
+                                {% else %}
+                                    <p class="muted">Brak osob obecnych w biurze dla wybranego dnia.</p>
+                                {% endfor %}
+                            </div>
+                        </article>
+                    </div>
+
                     {% if is_granted('ROLE_ADMIN') %}
                         <div class="content-tab-panel" data-content-tab="admin-desks">
                             <article class="panel">
@@ -1200,6 +1426,70 @@
                                 </form>
                             </article>
                         </div>
+
+                        <div class="content-tab-panel" data-content-tab="admin-reports">
+                            <article class="panel stack">
+                                <div>
+                                    <div class="eyebrow">Admin / raporty</div>
+                                    <h2>Raporty operacyjne</h2>
+                                </div>
+
+                                <div class="report-grid">
+                                    <div class="report-card">
+                                        <strong>{{ adminReports.openIssueCount }}</strong>
+                                        <span class="muted">otwarte zgloszenia</span>
+                                    </div>
+                                    <div class="report-card">
+                                        <strong>{{ adminReports.waitingCount }}</strong>
+                                        <span class="muted">aktywnych wpisow na waitliscie</span>
+                                    </div>
+                                    <div class="report-card">
+                                        <strong>{{ adminReports.recurringReservationCount }}</strong>
+                                        <span class="muted">aktywnych rezerwacji cyklicznych</span>
+                                    </div>
+                                </div>
+
+                                <div class="report-grid">
+                                    <div class="report-list">
+                                        <h3>Najczesciej zajmowane biurka</h3>
+                                        {% for item in adminReports.topBusyDesks %}
+                                            <div class="compact-item">
+                                                <strong>{{ item.label }}</strong>
+                                                <span class="muted">{{ item.roomName }}</span>
+                                                <span>{{ item.count }} zajec</span>
+                                            </div>
+                                        {% else %}
+                                            <p class="muted">Brak danych o zajeciach.</p>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="report-list">
+                                        <h3>Najczesciej waitlistowane biurka</h3>
+                                        {% for item in adminReports.topWaitlistedDesks %}
+                                            <div class="compact-item">
+                                                <strong>{{ item.label }}</strong>
+                                                <span class="muted">{{ item.roomName }}</span>
+                                                <span>{{ item.count }} wpisow</span>
+                                            </div>
+                                        {% else %}
+                                            <p class="muted">Brak danych o waitliscie.</p>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="report-list">
+                                        <h3>Problemy wg kategorii</h3>
+                                        {% for item in adminReports.issuesByCategory %}
+                                            <div class="compact-item">
+                                                <strong>{{ item.label }}</strong>
+                                                <span>{{ item.count }} zgloszen</span>
+                                            </div>
+                                        {% else %}
+                                            <p class="muted">Brak zgloszen problemow.</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
                     {% endif %}
                 </div>
             </section>
@@ -1218,6 +1508,8 @@
             const userSearchItems = Array.from(document.querySelectorAll('[data-user-search-item]'));
             const userSearchCount = document.querySelector('[data-user-search-count]');
             const userSearchEmpty = document.querySelector('[data-user-search-empty]');
+            const peopleSearchInput = document.querySelector('[data-people-search-input]');
+            const peopleSearchItems = Array.from(document.querySelectorAll('[data-people-search-item]'));
             const url = new URL(window.location.href);
             const initialContentTab = url.searchParams.get('tab');
 
@@ -1270,6 +1562,19 @@
                 }
             }
 
+            function updatePeopleSearch() {
+                if (!peopleSearchInput || peopleSearchItems.length === 0) {
+                    return;
+                }
+
+                const phrase = normalizeSearchText(peopleSearchInput.value);
+
+                peopleSearchItems.forEach(function (item) {
+                    const haystack = normalizeSearchText(item.getAttribute('data-people-search-text'));
+                    item.classList.toggle('is-hidden', phrase !== '' && !haystack.includes(phrase));
+                });
+            }
+
             buttons.forEach(function (button) {
                 button.addEventListener('click', function () {
                     const target = button.getAttribute('data-desk-view-target');
@@ -1293,6 +1598,11 @@
             if (userSearchInput) {
                 userSearchInput.addEventListener('input', updateUserSearch);
                 updateUserSearch();
+            }
+
+            if (peopleSearchInput) {
+                peopleSearchInput.addEventListener('input', updatePeopleSearch);
+                updatePeopleSearch();
             }
 
             activateContentTab(initialContentTab);

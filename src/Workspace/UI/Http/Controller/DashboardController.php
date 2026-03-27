@@ -6,8 +6,14 @@ namespace App\Workspace\UI\Http\Controller;
 
 use App\Workspace\Application\Command\ClaimDesk\ClaimDeskCommand;
 use App\Workspace\Application\Command\ClaimDesk\ClaimDeskHandler;
+use App\Workspace\Application\Command\CreateRecurringDeskReservation\CreateRecurringDeskReservationCommand;
+use App\Workspace\Application\Command\CreateRecurringDeskReservation\CreateRecurringDeskReservationHandler;
+use App\Workspace\Application\Command\JoinDeskWaitlist\JoinDeskWaitlistCommand;
+use App\Workspace\Application\Command\JoinDeskWaitlist\JoinDeskWaitlistHandler;
 use App\Workspace\Application\Command\RequestVacation\RequestVacationCommand;
 use App\Workspace\Application\Command\RequestVacation\RequestVacationHandler;
+use App\Workspace\Application\Command\ReportIssue\ReportIssueCommand;
+use App\Workspace\Application\Command\ReportIssue\ReportIssueHandler;
 use App\Workspace\Application\Query\GetDashboard\GetDashboardHandler;
 use App\Workspace\Application\Query\GetDashboard\GetDashboardQuery;
 use App\Workspace\Domain\Model\DeskLabel;
@@ -88,6 +94,82 @@ final class DashboardController extends AbstractController
             ));
 
             $session->getFlashBag()->add('success', 'Wolne biurko zostalo zajete.');
+        } catch (Throwable $exception) {
+            $session->getFlashBag()->add('error', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('app_dashboard', ['date' => $date]);
+    }
+
+    #[Route('/waitlist', name: 'app_desk_waitlist_join', methods: ['POST'])]
+    public function joinDeskWaitlist(
+        Request $request,
+        SessionInterface $session,
+        JoinDeskWaitlistHandler $handler,
+    ): RedirectResponse {
+        $date = $request->request->getString('date', date('Y-m-d'));
+
+        try {
+            $handler->handle(new JoinDeskWaitlistCommand(
+                $request->request->getString('userId'),
+                $request->request->getString('deskId'),
+                new DateTimeImmutable($date),
+            ));
+
+            $session->getFlashBag()->add('success', 'Uzytkownik zostal dodany do waitlisty dla wybranego biurka.');
+        } catch (Throwable $exception) {
+            $session->getFlashBag()->add('error', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('app_dashboard', ['date' => $date]);
+    }
+
+    #[Route('/recurring-claims', name: 'app_recurring_desk_claim_create', methods: ['POST'])]
+    public function createRecurringDeskClaim(
+        Request $request,
+        SessionInterface $session,
+        CreateRecurringDeskReservationHandler $handler,
+    ): RedirectResponse {
+        $date = $request->request->getString('date', date('Y-m-d'));
+
+        try {
+            $result = $handler->handle(new CreateRecurringDeskReservationCommand(
+                $request->request->getString('userId'),
+                $request->request->getString('deskId'),
+                new DateTimeImmutable($request->request->getString('startDate')),
+                new DateTimeImmutable($request->request->getString('endDate')),
+                $request->request->all('weekdays'),
+            ));
+
+            $session->getFlashBag()->add(
+                'success',
+                sprintf('Zapisano rezerwacje cykliczna. Utworzono %d zajec, pominieto %d konfliktow.', $result->createdClaims, $result->skippedClaims),
+            );
+        } catch (Throwable $exception) {
+            $session->getFlashBag()->add('error', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('app_dashboard', ['date' => $date]);
+    }
+
+    #[Route('/issues', name: 'app_issue_report_create', methods: ['POST'])]
+    public function reportIssue(
+        Request $request,
+        SessionInterface $session,
+        ReportIssueHandler $handler,
+    ): RedirectResponse {
+        $date = $request->request->getString('date', date('Y-m-d'));
+
+        try {
+            $handler->handle(new ReportIssueCommand(
+                $request->request->getString('userId'),
+                $request->request->getString('deskId') ?: null,
+                $request->request->getString('roomId') ?: null,
+                $request->request->getString('category'),
+                $request->request->getString('description'),
+            ));
+
+            $session->getFlashBag()->add('success', 'Zgloszenie problemu zostalo zapisane.');
         } catch (Throwable $exception) {
             $session->getFlashBag()->add('error', $exception->getMessage());
         }

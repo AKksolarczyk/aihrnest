@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace App\Workspace\Application\Query\GetDashboard;
 
 use App\Workspace\Domain\Model\DeskClaim;
+use App\Workspace\Domain\Model\DeskWaitlistEntry;
+use App\Workspace\Domain\Model\IssueReport;
+use App\Workspace\Domain\Model\RecurringDeskReservation;
 use App\Workspace\Domain\Model\Room;
 use App\Workspace\Domain\Model\User;
 use App\Workspace\Domain\Model\Vacation;
 use App\Workspace\Domain\Repository\DeskClaimRepositoryInterface;
+use App\Workspace\Domain\Repository\DeskWaitlistRepositoryInterface;
+use App\Workspace\Domain\Repository\IssueReportRepositoryInterface;
 use App\Workspace\Domain\Repository\OfficeLayoutRepositoryInterface;
+use App\Workspace\Domain\Repository\RecurringDeskReservationRepositoryInterface;
 use App\Workspace\Domain\Repository\UserRepositoryInterface;
 use App\Workspace\Domain\Repository\VacationRepositoryInterface;
 use App\Workspace\Domain\Service\DailyPlan;
@@ -22,6 +28,9 @@ final class GetDashboardHandler
         private readonly UserRepositoryInterface $userRepository,
         private readonly VacationRepositoryInterface $vacationRepository,
         private readonly DeskClaimRepositoryInterface $deskClaimRepository,
+        private readonly DeskWaitlistRepositoryInterface $deskWaitlistRepository,
+        private readonly RecurringDeskReservationRepositoryInterface $recurringDeskReservationRepository,
+        private readonly IssueReportRepositoryInterface $issueReportRepository,
         private readonly OfficeLayoutRepositoryInterface $officeLayoutRepository,
         private readonly WorkspacePlanner $workspacePlanner,
     ) {
@@ -32,6 +41,9 @@ final class GetDashboardHandler
         $users = $this->indexUsers($this->userRepository->findAllOrderedByName());
         $vacations = $this->vacationRepository->findAll();
         $deskClaims = $this->deskClaimRepository->findAll();
+        $deskWaitlistEntries = $this->deskWaitlistRepository->findAll();
+        $recurringReservations = $this->recurringDeskReservationRepository->findAll();
+        $issueReports = $this->issueReportRepository->findAll();
         $rooms = $this->officeLayoutRepository->findAllRooms();
         $deskMap = $this->workspacePlanner->buildDeskMap($rooms);
         $activeUserId = isset($users[$query->activeUserId]) ? $query->activeUserId : (array_key_first($users) ?? '');
@@ -49,6 +61,13 @@ final class GetDashboardHandler
             $dailyPlan->availableDesks(),
             $this->buildVacationsViewForUser($vacations, $activeUserId, $users),
             $this->buildDeskClaimsViewForUser($deskClaims, $activeUserId, $users, $deskMap),
+            $this->buildDeskCatalog($deskMap),
+            $this->buildRoomCatalog($rooms),
+            $this->buildWaitlistViewForUser($deskWaitlistEntries, $activeUserId, $deskMap),
+            $this->buildRecurringReservationsViewForUser($recurringReservations, $activeUserId, $deskMap),
+            $this->buildIssueReportsViewForUser($issueReports, $activeUserId, $deskMap, $rooms),
+            $this->buildPeopleFinderView($userStatuses),
+            $this->buildAdminReports($deskClaims, $deskWaitlistEntries, $issueReports, $recurringReservations, $deskMap),
             [
                 'occupiedCount' => count($dailyPlan->occupancy()),
                 'freeCount' => count($dailyPlan->availableDesks()),
@@ -246,6 +265,232 @@ final class GetDashboardHandler
                 'date' => $claim->date()->format('Y-m-d'),
             ];
         }, $claims);
+    }
+
+    /**
+     * @param array<string, array{label: string, roomName: string, roomId: string}> $deskMap
+     * @return list<array{id: string, label: string, roomName: string}>
+     */
+    private function buildDeskCatalog(array $deskMap): array
+    {
+        $catalog = [];
+
+        foreach ($deskMap as $deskId => $desk) {
+            $catalog[] = [
+                'id' => $deskId,
+                'label' => $desk['label'],
+                'roomName' => $desk['roomName'],
+            ];
+        }
+
+        usort($catalog, static fn (array $left, array $right): int => strcmp($left['label'], $right['label']));
+
+        return $catalog;
+    }
+
+    /**
+     * @param list<Room> $rooms
+     * @return list<array{id: string, name: string}>
+     */
+    private function buildRoomCatalog(array $rooms): array
+    {
+        return array_map(static fn (Room $room): array => [
+            'id' => $room->id(),
+            'name' => $room->name(),
+        ], $rooms);
+    }
+
+    /**
+     * @param list<DeskWaitlistEntry> $entries
+     * @param array<string, array{label: string, roomName: string, roomId: string}> $deskMap
+     * @return array<int, array<string, string>>
+     */
+    private function buildWaitlistViewForUser(array $entries, string $userId, array $deskMap): array
+    {
+        $entries = array_values(array_filter(
+            $entries,
+            static fn (DeskWaitlistEntry $entry): bool => $entry->userId() === $userId,
+        ));
+
+        usort($entries, static fn (DeskWaitlistEntry $left, DeskWaitlistEntry $right): int => strcmp(
+            $left->date()->format('Y-m-d'),
+            $right->date()->format('Y-m-d'),
+        ));
+
+        return array_map(static function (DeskWaitlistEntry $entry) use ($deskMap): array {
+            return [
+                'deskLabel' => $deskMap[$entry->deskId()]['label'] ?? $entry->deskId(),
+                'roomName' => $deskMap[$entry->deskId()]['roomName'] ?? '',
+                'date' => $entry->date()->format('Y-m-d'),
+                'status' => $entry->status(),
+            ];
+        }, $entries);
+    }
+
+    /**
+     * @param list<RecurringDeskReservation> $reservations
+     * @param array<string, array{label: string, roomName: string, roomId: string}> $deskMap
+     * @return array<int, array<string, string|array<int, string>>>
+     */
+    private function buildRecurringReservationsViewForUser(array $reservations, string $userId, array $deskMap): array
+    {
+        $reservations = array_values(array_filter(
+            $reservations,
+            static fn (RecurringDeskReservation $reservation): bool => $reservation->userId() === $userId,
+        ));
+
+        return array_map(static function (RecurringDeskReservation $reservation) use ($deskMap): array {
+            return [
+                'deskLabel' => $deskMap[$reservation->deskId()]['label'] ?? $reservation->deskId(),
+                'roomName' => $deskMap[$reservation->deskId()]['roomName'] ?? '',
+                'startDate' => $reservation->startDate()->format('Y-m-d'),
+                'endDate' => $reservation->endDate()->format('Y-m-d'),
+                'weekdays' => $reservation->weekdays(),
+            ];
+        }, $reservations);
+    }
+
+    /**
+     * @param list<IssueReport> $issues
+     * @param list<Room> $rooms
+     * @param array<string, array{label: string, roomName: string, roomId: string}> $deskMap
+     * @return array<int, array<string, string>>
+     */
+    private function buildIssueReportsViewForUser(array $issues, string $userId, array $deskMap, array $rooms): array
+    {
+        $roomNames = [];
+
+        foreach ($rooms as $room) {
+            $roomNames[$room->id()] = $room->name();
+        }
+
+        $issues = array_values(array_filter(
+            $issues,
+            static fn (IssueReport $issue): bool => $issue->userId() === $userId,
+        ));
+
+        return array_map(static function (IssueReport $issue) use ($deskMap, $roomNames): array {
+            return [
+                'category' => $issue->category(),
+                'status' => $issue->status(),
+                'target' => $issue->deskId() !== null
+                    ? (($deskMap[$issue->deskId()]['label'] ?? $issue->deskId()).' / '.($deskMap[$issue->deskId()]['roomName'] ?? ''))
+                    : ($roomNames[$issue->roomId() ?? ''] ?? ($issue->roomId() ?? '')),
+                'description' => $issue->description(),
+                'reportedAt' => $issue->reportedAt()->format('Y-m-d H:i'),
+            ];
+        }, $issues);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $userStatuses
+     * @return array<int, array<string, string>>
+     */
+    private function buildPeopleFinderView(array $userStatuses): array
+    {
+        $people = [];
+
+        foreach ($userStatuses as $status) {
+            if ($status['deskLabel'] === null && !$status['isOnVacation']) {
+                continue;
+            }
+
+            $people[] = [
+                'name' => (string) $status['name'],
+                'team' => (string) $status['team'],
+                'deskLabel' => (string) ($status['deskLabel'] ?? 'brak biurka'),
+                'statusLabel' => (string) $status['statusLabel'],
+            ];
+        }
+
+        return $people;
+    }
+
+    /**
+     * @param list<DeskClaim> $deskClaims
+     * @param list<DeskWaitlistEntry> $waitlistEntries
+     * @param list<IssueReport> $issueReports
+     * @param list<RecurringDeskReservation> $recurringReservations
+     * @param array<string, array{label: string, roomName: string, roomId: string}> $deskMap
+     * @return array<string, mixed>
+     */
+    private function buildAdminReports(
+        array $deskClaims,
+        array $waitlistEntries,
+        array $issueReports,
+        array $recurringReservations,
+        array $deskMap,
+    ): array {
+        $deskUsage = [];
+        $waitlistUsage = [];
+        $issueCategories = [];
+
+        foreach ($deskClaims as $claim) {
+            $deskUsage[$claim->deskId()] = ($deskUsage[$claim->deskId()] ?? 0) + 1;
+        }
+
+        foreach ($waitlistEntries as $entry) {
+            if ($entry->status() !== 'waiting') {
+                continue;
+            }
+
+            $waitlistUsage[$entry->deskId()] = ($waitlistUsage[$entry->deskId()] ?? 0) + 1;
+        }
+
+        foreach ($issueReports as $issue) {
+            $issueCategories[$issue->category()] = ($issueCategories[$issue->category()] ?? 0) + 1;
+        }
+
+        arsort($deskUsage);
+        arsort($waitlistUsage);
+        arsort($issueCategories);
+
+        return [
+            'openIssueCount' => count(array_filter($issueReports, static fn (IssueReport $issue): bool => $issue->status() === 'open')),
+            'waitingCount' => count(array_filter($waitlistEntries, static fn (DeskWaitlistEntry $entry): bool => $entry->status() === 'waiting')),
+            'recurringReservationCount' => count(array_filter($recurringReservations, static fn (RecurringDeskReservation $reservation): bool => $reservation->isActive())),
+            'topBusyDesks' => $this->mapDeskCounterReport($deskUsage, $deskMap),
+            'topWaitlistedDesks' => $this->mapDeskCounterReport($waitlistUsage, $deskMap),
+            'issuesByCategory' => $this->mapSimpleCounterReport($issueCategories),
+        ];
+    }
+
+    /**
+     * @param array<string, int> $counters
+     * @param array<string, array{label: string, roomName: string, roomId: string}> $deskMap
+     * @return array<int, array<string, string|int>>
+     */
+    private function mapDeskCounterReport(array $counters, array $deskMap): array
+    {
+        $items = [];
+
+        foreach (array_slice($counters, 0, 5, true) as $deskId => $count) {
+            $items[] = [
+                'label' => $deskMap[$deskId]['label'] ?? $deskId,
+                'roomName' => $deskMap[$deskId]['roomName'] ?? '',
+                'count' => $count,
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * @param array<string, int> $counters
+     * @return array<int, array<string, string|int>>
+     */
+    private function mapSimpleCounterReport(array $counters): array
+    {
+        $items = [];
+
+        foreach (array_slice($counters, 0, 5, true) as $label => $count) {
+            $items[] = [
+                'label' => $label,
+                'count' => $count,
+            ];
+        }
+
+        return $items;
     }
 
     /**
