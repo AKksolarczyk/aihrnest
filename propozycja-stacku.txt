@@ -1,0 +1,22 @@
+Smart Desk & Rooms Scheduler
+
+Rekomendowany stack:
+- Backend: Symfony
+- API: REST w Symfony lub API Platform
+- Baza danych: PostgreSQL
+- ORM: Doctrine
+- Kolejki/zadania: Symfony Messenger
+- Harmonogram: CRON / Scheduler
+- Autoryzacja: Symfony Security
+
+Frontend:
+- MVP: Twig + Stimulus + Turbo
+- Wersja bardziej interaktywna: Vue 3
+
+Integracja:
+- HRnest przez warstwę adaptera
+- Lokalnie: mock dostawcy nieobecnosci
+
+Uruchamianie lokalne:
+- Docker Compose
+- nginx + php-fpm + postgres

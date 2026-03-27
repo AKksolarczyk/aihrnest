@@ -1,0 +1,7 @@
+W aplikacji powinno istnieć konto użytkownika.
+Użytkownik jest przypisany do jakiegoś biurka i ma ustawiony harmonogram, który oznacza w jakie dni tygodnia zajmuje to biurko.
+Użytkownik może wnioskować o urlop i gdy ustawi urlop, to jego biurko dostaje status wolne.
+Użytkownik, który w danym dniu nie ma zajętego żadnego biurka, może zająć wolne biurko.
+Powinny gdzieś istnieć ustawienia jaka jest konfiguracja biurek w 3 pomieszczeniach.
+
+Tutaj jest dokumentacja API do platformy z urlopami https://api.hrnest.io/docs/index.html?_gl=1*f37egc*_ga*MjUwNjU3MDI0LjE3NDM0MjE3MjU.*_ga_9DDVPMC2Q5*czE3NzQ1OTkyMDAkbzMyMSRnMCR0MTc3NDYwMTE0MCRqNjAkbDAkaDI1OTQyODYzNw..*_fplc*SCUyQjZabW9QSHprVThXSFJlU1pzYzJmUWxNbnV3QngwY2N5NzdWSkdkdUZyM3MyQzk4Uld5WSUyQjdyMVdjNHdaZHJJTmhQS2NKZ1VQNldlNU5wTGNvZnBHNm5GT1RiUEpLZjBQZEZxTVpqZG5mWjNyTmNSTUtrJTJCRTFhMFY3UzVBJTNEJTNE*FPAU*NTIwMjc0NjQ0LjE3NjczMzgxODE.

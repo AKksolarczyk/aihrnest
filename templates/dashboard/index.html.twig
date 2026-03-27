@@ -1,0 +1,439 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}DeskFlow{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        :root {
+            --bg: #f5efe6;
+            --panel: #fffaf3;
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --line: #d6c7b5;
+            --accent: #b85c38;
+            --accent-deep: #6f2f1d;
+            --success: #2f6b4f;
+            --warning: #d97706;
+            --danger: #9f2d2d;
+            --shadow: 0 18px 50px rgba(96, 62, 38, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(184, 92, 56, 0.18), transparent 30%),
+                linear-gradient(135deg, #f7f1e8 0%, #efe3d0 100%);
+        }
+
+        .page {
+            width: min(1200px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 32px 0 48px;
+        }
+
+        .hero {
+            display: grid;
+            gap: 24px;
+            grid-template-columns: 1.6fr 1fr;
+            align-items: start;
+            margin-bottom: 24px;
+        }
+
+        .hero-card, .panel {
+            background: rgba(255, 250, 243, 0.92);
+            border: 1px solid rgba(111, 47, 29, 0.12);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(8px);
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--accent);
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        h1, h2, h3, p { margin-top: 0; }
+        h1 { font-size: clamp(2.2rem, 4vw, 4rem); line-height: 0.95; margin-bottom: 16px; }
+        .lead { font-size: 1.05rem; line-height: 1.6; max-width: 55ch; color: #403a35; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 24px;
+        }
+
+        .stat {
+            padding: 16px;
+            border-radius: 18px;
+            background: #f1e5d7;
+            border: 1px solid rgba(111, 47, 29, 0.12);
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 6px;
+        }
+
+        .stack {
+            display: grid;
+            gap: 20px;
+        }
+
+        .chip-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+            font-size: 0.92rem;
+        }
+
+        .layout {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 1.2fr 0.8fr;
+        }
+
+        .grid-2 {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .week {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        .week-day {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 14px;
+            background: #fff;
+        }
+
+        .rooms {
+            display: grid;
+            gap: 18px;
+        }
+
+        .room-grid {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            margin-top: 16px;
+        }
+
+        .desk {
+            border-radius: 20px;
+            padding: 16px;
+            min-height: 132px;
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, #fff 0%, #f8f2ea 100%);
+        }
+
+        .desk.free {
+            border-style: dashed;
+            background: linear-gradient(180deg, #fefbf7 0%, #f3ecdf 100%);
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            background: #efe3d0;
+        }
+
+        .pill.schedule { color: var(--accent-deep); }
+        .pill.claim { color: var(--success); }
+        .pill.vacation { color: var(--warning); }
+        .pill.none { color: var(--muted); }
+
+        form {
+            display: grid;
+            gap: 12px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            font-size: 0.95rem;
+        }
+
+        input, select, button {
+            font: inherit;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            padding: 12px 14px;
+            background: #fff;
+        }
+
+        button {
+            cursor: pointer;
+            background: var(--accent);
+            color: #fff8f2;
+            border: none;
+        }
+
+        .ghost {
+            background: #f1e5d7;
+            color: var(--accent-deep);
+        }
+
+        .flash {
+            padding: 14px 16px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+
+        .flash.success { background: rgba(47, 107, 79, 0.12); color: var(--success); }
+        .flash.error { background: rgba(159, 45, 45, 0.12); color: var(--danger); }
+
+        .table-like {
+            display: grid;
+            gap: 12px;
+        }
+
+        .row {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: 1.1fr 0.8fr 0.8fr;
+            align-items: center;
+            padding: 14px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: #fff;
+        }
+
+        .muted { color: var(--muted); }
+
+        @media (max-width: 960px) {
+            .hero, .layout, .grid-2, .week { grid-template-columns: 1fr; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="page">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="flash {{ label }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <section class="hero">
+            <div class="hero-card">
+                <div class="eyebrow">DeskFlow / plan biurek</div>
+                <h1>Zarzadzanie biurkami, urlopami i wolnymi miejscami.</h1>
+                <p class="lead">
+                    Aplikacja odwzorowuje specyfikacje: uzytkownik ma konto, stale biurko i harmonogram dni tygodnia,
+                    urlop zwalnia stanowisko, a osoba bez miejsca moze zajac wolne biurko z jednej z trzech skonfigurowanych sal.
+                </p>
+
+                <div class="chip-row">
+                    <span class="chip">Data operacyjna: {{ selectedDate|date('d.m.Y') }}</span>
+                    <span class="chip">Aktywne konto: {{ activeUser ? activeUser.name : 'brak' }}</span>
+                    <span class="chip">3 pomieszczenia / 12 biurek</span>
+                </div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <strong>{{ summary.occupiedCount }}</strong>
+                        <span>Zajete biurka</span>
+                    </div>
+                    <div class="stat">
+                        <strong>{{ summary.freeCount }}</strong>
+                        <span>Wolne biurka</span>
+                    </div>
+                    <div class="stat">
+                        <strong>{{ summary.vacationCount }}</strong>
+                        <span>Osoby na urlopie</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-card stack">
+                <div>
+                    <h2>Kontekst dnia</h2>
+                    <p class="muted">Przelacz konto uzytkownika i dzien, aby symulowac plan oblozenia.</p>
+                </div>
+
+                <form method="get" action="{{ path('app_dashboard') }}">
+                    <label>
+                        Dzien roboczy
+                        <input type="date" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                    </label>
+                    <button class="ghost" type="submit">Pokaz plan</button>
+                </form>
+
+                <form method="post" action="{{ path('app_active_user') }}">
+                    <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                    <label>
+                        Aktywne konto
+                        <select name="userId">
+                            {% for user in users %}
+                                <option value="{{ user.id }}" {% if activeUser and activeUser.id == user.id %}selected{% endif %}>{{ user.name }} / {{ user.team }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <button type="submit">Przelacz konto</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="panel" style="margin-bottom: 20px;">
+            <h2>Perspektywa 5 dni</h2>
+            <div class="week">
+                {% for day in weekOverview %}
+                    <div class="week-day">
+                        <strong>{{ day.date|date('D, d.m') }}</strong>
+                        <p class="muted">{{ day.occupiedCount }} zajetych / {{ day.freeCount }} wolnych</p>
+                        <span class="pill vacation">{{ day.vacationCount }} urlop</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="layout">
+            <div class="stack">
+                <div class="panel">
+                    <h2>Plan pomieszczen</h2>
+                    <div class="rooms">
+                        {% for room in rooms %}
+                            <article>
+                                <h3>{{ room.name }}</h3>
+                                <p class="muted">{{ room.description }}</p>
+                                <div class="room-grid">
+                                    {% for desk in room.desks %}
+                                        <div class="desk {% if desk.isFree %}free{% endif %}">
+                                            <strong>{{ desk.label }}</strong>
+                                            {% if desk.occupancy %}
+                                                <p>{{ desk.occupancy.userName }}</p>
+                                                <p class="muted">{{ desk.occupancy.team }}</p>
+                                                <span class="pill {{ desk.occupancy.type }}">{{ desk.occupancy.label }}</span>
+                                            {% else %}
+                                                <p>Biurko wolne</p>
+                                                <span class="pill none">mozna zajac</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Status uzytkownikow</h2>
+                    <div class="table-like">
+                        {% for status in userStatuses %}
+                            <div class="row">
+                                <div>
+                                    <strong>{{ status.name }}</strong>
+                                    <div class="muted">{{ status.team }}</div>
+                                </div>
+                                <div>
+                                    <div>{{ status.statusLabel }}</div>
+                                    <div class="muted">Przypisane: {{ status.assignedDeskLabel }}</div>
+                                </div>
+                                <div>
+                                    {% if status.deskLabel %}
+                                        <span class="pill {% if status.isOnVacation %}vacation{% elseif status.isScheduledToday %}schedule{% else %}claim{% endif %}">{{ status.deskLabel }}</span>
+                                    {% else %}
+                                        <span class="pill {% if status.isOnVacation %}vacation{% else %}none{% endif %}">{{ status.isOnVacation ? 'na urlopie' : 'brak miejsca' }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="stack">
+                <div class="panel">
+                    <h2>Wniosek urlopowy</h2>
+                    <form method="post" action="{{ path('app_vacation_request') }}">
+                        <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                        <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                        <label>
+                            Start urlopu
+                            <input type="date" name="startDate" value="{{ selectedDate|date('Y-m-d') }}" required>
+                        </label>
+                        <label>
+                            Koniec urlopu
+                            <input type="date" name="endDate" value="{{ selectedDate|date('Y-m-d') }}" required>
+                        </label>
+                        <button type="submit">Zapisz urlop dla {{ activeUser.name }}</button>
+                    </form>
+                </div>
+
+                <div class="panel">
+                    <h2>Zajmij wolne biurko</h2>
+                    <p class="muted">Akcja przejdzie tylko wtedy, gdy aktywny uzytkownik nie ma juz miejsca w wybranym dniu.</p>
+                    <form method="post" action="{{ path('app_desk_claim') }}">
+                        <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                        <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                        <label>
+                            Wolne biurko
+                            <select name="deskId" required>
+                                {% for desk in availableDesks %}
+                                    <option value="{{ desk.id }}">{{ desk.label }} / {{ desk.roomName }}</option>
+                                {% else %}
+                                    <option value="">Brak wolnych biurek</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <button type="submit" {% if availableDesks is empty %}disabled{% endif %}>Zajmij stanowisko</button>
+                    </form>
+                </div>
+
+                <div class="panel">
+                    <h2>Konfiguracja i historia</h2>
+                    <h3>Zaplanowane urlopy</h3>
+                    <div class="table-like">
+                        {% for vacation in vacations %}
+                            <div class="row">
+                                <div><strong>{{ vacation.userName }}</strong></div>
+                                <div>{{ vacation.startDate }}</div>
+                                <div>{{ vacation.endDate }}</div>
+                            </div>
+                        {% else %}
+                            <p class="muted">Brak wnioskow urlopowych.</p>
+                        {% endfor %}
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Zajecia wolnych biurek</h3>
+                    <div class="table-like">
+                        {% for claim in deskClaims %}
+                            <div class="row">
+                                <div><strong>{{ claim.userName }}</strong></div>
+                                <div>{{ claim.deskLabel }}</div>
+                                <div>{{ claim.date }}</div>
+                            </div>
+                        {% else %}
+                            <p class="muted">Brak dodatkowych zajec biurek.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}
