@@ -183,6 +183,36 @@
             scrollbar-color: rgba(47, 124, 246, 0.55) rgba(47, 124, 246, 0.08);
         }
 
+        .user-search {
+            display: grid;
+            gap: 10px;
+            margin: 18px 0 16px;
+        }
+
+        .user-search-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 0.82rem;
+            color: #5b7297;
+            font-weight: 700;
+        }
+
+        .user-search-empty {
+            display: none;
+            padding: 14px 16px;
+            border-radius: 18px;
+            border: 1px dashed rgba(47, 124, 246, 0.22);
+            background: rgba(47, 124, 246, 0.06);
+            color: #47628c;
+            font-size: 0.92rem;
+        }
+
+        .user-search-empty.visible {
+            display: block;
+        }
+
         .tabs::-webkit-scrollbar {
             width: 10px;
         }
@@ -200,6 +230,10 @@
 
         .tab {
             margin: 0;
+        }
+
+        .tab.is-hidden {
+            display: none;
         }
 
         .tab button {
@@ -804,7 +838,25 @@
 
                     <aside class="panel">
                         <div class="eyebrow">DeskFlow / uzytkownicy</div>
-                        <div class="tabs" aria-label="Zakladki uzytkownikow">
+                        <div class="user-search">
+                            <label for="user-search-input">
+                                Wyszukaj uzytkownika
+                                <input
+                                    id="user-search-input"
+                                    type="search"
+                                    placeholder="Imie, zespol, rola lub status"
+                                    autocomplete="off"
+                                    data-user-search-input
+                                >
+                            </label>
+                            <div class="user-search-meta">
+                                <span data-user-search-count>{{ users|length }} z {{ users|length }} uzytkownikow</span>
+                            </div>
+                        </div>
+                        <div class="user-search-empty" data-user-search-empty>
+                            Brak uzytkownikow pasujacych do wyszukiwania.
+                        </div>
+                        <div class="tabs" aria-label="Zakladki uzytkownikow" data-user-search-list>
                             {% for user in users %}
                                 {% set tabStatus = null %}
                                 {% for status in userStatuses %}
@@ -812,7 +864,17 @@
                                         {% set tabStatus = status %}
                                     {% endif %}
                                 {% endfor %}
-                                <form class="tab" method="post" action="{{ path('app_active_user') }}">
+                                {% set statusText = tabStatus and tabStatus.isOnVacation
+                                    ? 'Dzisiaj urlop'
+                                    : (tabStatus and tabStatus.deskLabel ? 'Biurko dzisiaj: ' ~ tabStatus.deskLabel : 'Dzisiaj bez biurka')
+                                %}
+                                <form
+                                    class="tab"
+                                    method="post"
+                                    action="{{ path('app_active_user') }}"
+                                    data-user-search-item
+                                    data-user-search-text="{{ (user.name ~ ' ' ~ user.team ~ ' ' ~ (user.role == 'admin' ? 'admin' : 'user') ~ ' ' ~ statusText)|lower }}"
+                                >
                                     <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
                                     <input type="hidden" name="userId" value="{{ user.id }}">
                                     <button type="submit" class="{% if activeUser and activeUser.id == user.id %}active{% endif %}">
@@ -820,13 +882,7 @@
                                         <span>{{ user.team }}</span>
                                         <span>Rola: {{ user.role == 'admin' ? 'Admin' : 'User' }}</span>
                                         <small>
-                                            {% if tabStatus and tabStatus.isOnVacation %}
-                                                Dzisiaj urlop
-                                            {% elseif tabStatus and tabStatus.deskLabel %}
-                                                Biurko dzisiaj: {{ tabStatus.deskLabel }}
-                                            {% else %}
-                                                Dzisiaj bez biurka
-                                            {% endif %}
+                                            {{ statusText }}
                                         </small>
                                     </button>
                                 </form>
@@ -1093,6 +1149,45 @@
             const views = Array.from(document.querySelectorAll('[data-desk-view]'));
             const contentTabButtons = Array.from(document.querySelectorAll('[data-content-tab-target]'));
             const contentTabPanels = Array.from(document.querySelectorAll('[data-content-tab]'));
+            const userSearchInput = document.querySelector('[data-user-search-input]');
+            const userSearchItems = Array.from(document.querySelectorAll('[data-user-search-item]'));
+            const userSearchCount = document.querySelector('[data-user-search-count]');
+            const userSearchEmpty = document.querySelector('[data-user-search-empty]');
+
+            function normalizeSearchText(value) {
+                return (value || '')
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '');
+            }
+
+            function updateUserSearch() {
+                if (!userSearchInput || userSearchItems.length === 0) {
+                    return;
+                }
+
+                const phrase = normalizeSearchText(userSearchInput.value);
+                let visibleCount = 0;
+
+                userSearchItems.forEach(function (item) {
+                    const haystack = normalizeSearchText(item.getAttribute('data-user-search-text'));
+                    const matches = phrase === '' || haystack.includes(phrase);
+
+                    item.classList.toggle('is-hidden', !matches);
+
+                    if (matches) {
+                        visibleCount += 1;
+                    }
+                });
+
+                if (userSearchCount) {
+                    userSearchCount.textContent = visibleCount + ' z ' + userSearchItems.length + ' uzytkownikow';
+                }
+
+                if (userSearchEmpty) {
+                    userSearchEmpty.classList.toggle('visible', visibleCount === 0);
+                }
+            }
 
             buttons.forEach(function (button) {
                 button.addEventListener('click', function () {
@@ -1121,6 +1216,11 @@
                     });
                 });
             });
+
+            if (userSearchInput) {
+                userSearchInput.addEventListener('input', updateUserSearch);
+                updateUserSearch();
+            }
         });
     </script>
 {% endblock %}
