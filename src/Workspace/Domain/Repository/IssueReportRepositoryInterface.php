@@ -23,5 +23,9 @@ interface IssueReportRepositoryInterface
      */
     public function findOpen(): array;
 
+    public function findById(string $issueReportId): ?IssueReport;
+
     public function add(IssueReport $issueReport): void;
+
+    public function save(IssueReport $issueReport): void;
 }

@@ -20,12 +20,15 @@ final class ReportIssueHandler
         private readonly OfficeLayoutRepositoryInterface $officeLayoutRepository,
         private readonly WorkspacePlanner $workspacePlanner,
         private readonly WorkspaceTransactionInterface $workspaceTransaction,
+        private readonly IssueReportNotificationMailer $issueReportNotificationMailer,
     ) {
     }
 
-    public function handle(ReportIssueCommand $command): void
+    public function handle(ReportIssueCommand $command): ReportIssueResult
     {
-        if ($this->userRepository->findById($command->userId) === null) {
+        $reporter = $this->userRepository->findById($command->userId);
+
+        if ($reporter === null) {
             throw new InvalidArgumentException('Nie znaleziono wskazanego uzytkownika.');
         }
 
@@ -43,15 +46,47 @@ final class ReportIssueHandler
             throw new InvalidArgumentException('Wybrane pomieszczenie nie istnieje.');
         }
 
-        $this->issueReportRepository->add(IssueReport::report(
+        $issueReport = IssueReport::report(
             sprintf('issue-%s', bin2hex(random_bytes(4))),
             $command->userId,
             $deskId,
             $roomId,
             $command->category,
             $command->description,
-        ));
+        );
+        $this->issueReportRepository->add($issueReport);
 
         $this->workspaceTransaction->flush();
+
+        $resourceLabel = $deskId !== null
+            ? sprintf('%s / %s', $deskMap[$deskId]['label'] ?? $deskId, $deskMap[$deskId]['roomName'] ?? '')
+            : ($roomId !== null ? $this->resolveRoomName($rooms, $roomId) : '');
+
+        $notifiedAdminsCount = 0;
+
+        foreach ($this->userRepository->findAllOrderedByName() as $recipient) {
+            if (!$recipient->isActive() || !in_array('ROLE_ADMIN', $recipient->getRoles(), true)) {
+                continue;
+            }
+
+            $this->issueReportNotificationMailer->send($recipient, $reporter, $issueReport, trim($resourceLabel));
+            ++$notifiedAdminsCount;
+        }
+
+        return new ReportIssueResult($notifiedAdminsCount);
+    }
+
+    /**
+     * @param list<object> $rooms
+     */
+    private function resolveRoomName(array $rooms, string $roomId): string
+    {
+        foreach ($rooms as $room) {
+            if (method_exists($room, 'id') && method_exists($room, 'name') && $room->id() === $roomId) {
+                return $room->name();
+            }
+        }
+
+        return $roomId;
     }
 }

@@ -99,6 +99,21 @@ final class IssueReport
         return $this->status;
     }
 
+    public function isOpen(): bool
+    {
+        return $this->status === 'open';
+    }
+
+    public function blocksDeskOccupancy(): bool
+    {
+        return $this->isOpen() && $this->deskId !== null;
+    }
+
+    public function close(): void
+    {
+        $this->status = 'closed';
+    }
+
     public function reportedAt(): DateTimeImmutable
     {
         return $this->reportedAt;

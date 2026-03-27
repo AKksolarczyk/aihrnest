@@ -7,6 +7,7 @@ namespace App\Workspace\Application\Command\JoinDeskWaitlist;
 use App\Workspace\Domain\Model\DeskWaitlistEntry;
 use App\Workspace\Domain\Repository\DeskClaimRepositoryInterface;
 use App\Workspace\Domain\Repository\DeskWaitlistRepositoryInterface;
+use App\Workspace\Domain\Repository\IssueReportRepositoryInterface;
 use App\Workspace\Domain\Repository\OfficeLayoutRepositoryInterface;
 use App\Workspace\Domain\Repository\UserRepositoryInterface;
 use App\Workspace\Domain\Repository\VacationRepositoryInterface;
@@ -21,6 +22,7 @@ final class JoinDeskWaitlistHandler
         private readonly DeskWaitlistRepositoryInterface $deskWaitlistRepository,
         private readonly DeskClaimRepositoryInterface $deskClaimRepository,
         private readonly VacationRepositoryInterface $vacationRepository,
+        private readonly IssueReportRepositoryInterface $issueReportRepository,
         private readonly OfficeLayoutRepositoryInterface $officeLayoutRepository,
         private readonly WorkspacePlanner $workspacePlanner,
         private readonly WorkspaceTransactionInterface $workspaceTransaction,
@@ -46,12 +48,19 @@ final class JoinDeskWaitlistHandler
             throw new InvalidArgumentException('Uzytkownik jest juz na waitliscie dla tego biurka i dnia.');
         }
 
+        $issueReports = $this->issueReportRepository->findOpen();
+
+        if (isset($this->workspacePlanner->indexUnavailableDeskIds($issueReports)[$command->deskId])) {
+            throw new InvalidArgumentException('Wybrane biurko jest tymczasowo niedostepne z powodu otwartego zgloszenia awarii.');
+        }
+
         $dailyPlan = $this->workspacePlanner->buildDailyPlan(
             $command->date,
             $this->userRepository->findAllOrderedByName(),
             $this->vacationRepository->findAll(),
             $this->deskClaimRepository->findAll(),
             $rooms,
+            $issueReports,
         );
 
         if ($dailyPlan->deskIsAvailable($command->deskId)) {

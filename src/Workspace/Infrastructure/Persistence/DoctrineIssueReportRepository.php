@@ -39,7 +39,17 @@ final class DoctrineIssueReportRepository implements IssueReportRepositoryInterf
         return $issues;
     }
 
+    public function findById(string $issueReportId): ?IssueReport
+    {
+        return $this->entityManager->find(IssueReport::class, $issueReportId);
+    }
+
     public function add(IssueReport $issueReport): void
+    {
+        $this->entityManager->persist($issueReport);
+    }
+
+    public function save(IssueReport $issueReport): void
     {
         $this->entityManager->persist($issueReport);
     }

@@ -81,6 +81,8 @@ flash:
     created: 'Recurring reservation saved. %created% claims created, %skipped% conflicts skipped.'
   issue:
     created: 'Issue report has been saved.'
+    created_notified: 'Issue report has been saved and %count% email notifications were sent to administrators.'
+    closed: 'The issue report has been closed.'
   admin:
     desks_updated: '%count% desk names updated.'
 
@@ -99,46 +101,74 @@ mail:
     cta: 'Claim this desk'
     outro: 'The link works only if the desk is still available.'
     text: "Hi %name%,\n\nDesk %desk% (%room%) for %date% has been released.\nClick the link to claim it:\n%url%\n\nThe link works only if the desk is still free."
+  issue:
+    subject: 'New incident reported in Smart Desk'
+    greeting: 'Hi %admin%,'
+    intro: '%reporter% reported a %category% issue for %resource%.'
+    description_label: 'Description'
+    cta: 'Open dashboard'
+    text: "Hi %admin%,\n\n%reporter% reported a %category% issue for %resource%.\n\nDescription:\n%description%\n\nDashboard:\n%url%"
 
 about:
   meta_title: 'About Smart Desk'
   eyebrow: 'Smart Desk & Rooms Scheduler'
   hero:
     title: 'Desks, rooms and absences in one app.'
-    lead: 'Smart Desk organizes office planning. It shows resource availability in a day view, allows desk booking, builds a waitlist, plans recurring attendance, reports issues and prepares the foundation for conference room management and HR absence integration.'
+    lead: 'Smart Desk organizes office planning end-to-end. A user creates an account, activates it by email, books a desk from the map, joins the waitlist, receives an offer when a desk is released, plans recurring attendance, reports issues and uses people finder and admin reporting.'
     login: 'Go to sign in'
     register: 'Create account'
     dashboard: 'Open dashboard'
   pill:
     booking_title: 'Desk Booking'
-    booking: 'Desk booking for a specific day with an office map view.'
+    booking: 'Desk booking and manual desk release for a specific day with an office map view.'
     waitlist_title: 'Waitlist + Recurrence'
-    waitlist: 'Queue for occupied desks and rules for recurring desk claims.'
+    waitlist: 'Queue for occupied desks with email offer after release, plus recurring reservation rules.'
     people_title: 'People Finder'
-    people: 'Quick view of people currently in the office with location and status.'
+    people: 'Quick view of people in the office with location, desk status and assignment context.'
     reports_title: 'Admin Reports'
-    reports: 'Operational reports about occupancy, waitlists and issue reports.'
+    reports: 'Operational reports about occupancy, waitlists, issues and space pressure.'
   features:
     eyebrow: 'Product capabilities'
     title: 'What the system can do right now'
     registration:
       title: 'Registration and account activation'
-      body: 'A user creates an account, receives an activation email and can sign in only after confirmation.'
+      body: 'A user creates an account, selects the interface language, receives an activation email and can sign in only after confirmation.'
     dashboard:
       title: 'Day dashboard'
-      body: 'The day view shows desk availability, active users, planned vacations and quick actions.'
+      body: 'The day view shows desk availability, active users, planned vacations, people finder and quick operational actions.'
     booking:
       title: 'Desk booking'
-      body: 'The system allows claiming a free desk for the selected day and protects availability conflicts.'
+      body: 'The system allows claiming a free desk for the selected day, releasing it manually and protecting availability conflicts.'
     absence:
       title: 'Absence model'
-      body: 'Vacations reduce the balance and overlapping ranges for the same user are blocked.'
+      body: 'Vacations reduce the balance, overlapping ranges are blocked and conflicting desk claims are released.'
     waitlist:
       title: 'Waitlist and recurrence'
-      body: 'Occupied desks support a waiting queue, and recurring office attendance can be saved as recurring reservations.'
+      body: 'Occupied desks support a waiting queue, released desks trigger an email claim offer, and recurring office attendance can be saved as recurring reservations.'
     reporting:
       title: 'Issues and reports'
-      body: 'Users report desk and room problems, while the administrator sees usage and operational bottleneck reports.'
+      body: 'Users report desk and room problems, while the administrator sees usage, waitlist and operational bottleneck reports.'
+  business:
+    eyebrow: 'Business value'
+    title: 'What business problems the current version solves'
+    capacity:
+      title: 'Less wasted office capacity'
+      body: 'Releasing a desk after vacation or manual cancellation immediately returns it to circulation and reduces empty reservations.'
+    self_service:
+      title: 'Employee self-service'
+      body: 'Employees register, activate accounts, choose language, claim desks, join the waitlist and report issues without support involvement.'
+    operations:
+      title: 'Better office operations'
+      body: 'Office managers and admins can see current availability, resource pressure and reported issues in one place.'
+    waitlist:
+      title: 'Handling demand for popular desks'
+      body: 'A waitlist with release email offers helps fill popular desks faster and removes manual back-and-forth.'
+    visibility:
+      title: 'Clear office presence visibility'
+      body: 'People finder makes it easy to see who is in the office that day, where they sit and what their desk status is.'
+    readiness:
+      title: 'Ready for the next product stage'
+      body: 'The product already has foundations for meeting rooms, HR integrations, office policies and deeper reporting.'
   stack:
     eyebrow: 'Technology stack'
     title: 'What it runs on'
@@ -155,16 +185,16 @@ about:
     title: 'How the app works'
     step1:
       title: 'Account creation'
-      body: 'A new user registers an account, selects office days and optionally an assigned desk.'
+      body: 'A new user registers an account, selects language, office days and optionally an assigned desk.'
     step2:
       title: 'Email activation'
       body: 'The system sends a local email with an activation link. Without confirmation the account remains inactive.'
     step3:
       title: 'Day plan and booking'
-      body: 'After sign-in, the user sees resource status, claims a desk, joins a waitlist or creates recurring reservations.'
+      body: 'After sign-in, the user sees resource status, claims a desk, releases it, joins a waitlist or creates recurring reservations.'
     step4:
       title: 'Operations and supervision'
-      body: 'Use cases protect conflicts, people finder shows who sits where, and the admin gets reports and issue reports.'
+      body: 'Use cases protect conflicts, people finder shows who sits where, the waitlist sends offers after release, and the admin gets reports and issue reports.'
   footer: 'This page summarizes the current product state. Detailed domain and architecture rules are described in docs/context.'
 
 pricing:
@@ -296,6 +326,7 @@ dashboard:
     room: 'Room'
     description: 'Description'
     submit: 'Send report'
+    close: 'Close incident'
   issue_category:
     sprzet: 'Hardware'
     komfort: 'Comfort'
@@ -336,6 +367,8 @@ dashboard:
     legend:
       free: 'Free desk'
       busy: 'Occupied desk'
+      unavailable: 'Out-of-service desk'
+    out_of_service: 'Desk temporarily unavailable'
   week:
     eyebrow: 'Tab: week'
     title: '5-day perspective'
@@ -366,6 +399,8 @@ dashboard:
     top_waitlist_empty: 'No waitlist data.'
     issues_by_category: 'Issues by category'
     issues_empty: 'No issue reports.'
+    open_issue_list: 'Open incidents'
+    open_issue_list_empty: 'No open incidents.'
     claim_count: '%count% claims'
     waitlist_count: '%count% entries'
     issue_count: '%count% reports'
@@ -379,6 +414,7 @@ dashboard:
     closed: 'Closed'
   status:
     vacation: 'Vacation'
+    out_of_service: 'Desk out of service'
     assigned_desk: 'Working from assigned desk'
     claimed_desk: 'Claimed a free desk'
     no_assigned_desk: 'No assigned desk'
@@ -397,6 +433,9 @@ dashboard:
 'Uzytkownik z takim adresem email juz istnieje.': 'A user with this email address already exists.'
 'Haslo musi miec co najmniej 8 znakow.': 'Password must be at least 8 characters long.'
 'Wybrane pomieszczenie nie istnieje.': 'The selected room does not exist.'
+'Wybrane biurko jest tymczasowo niedostepne z powodu otwartego zgloszenia awarii.': 'The selected desk is temporarily unavailable because of an open issue report.'
+'Nie znaleziono wskazanego zgloszenia awarii.': 'The selected incident report was not found.'
+'To zgloszenie awarii jest juz zamkniete.': 'This incident report is already closed.'
 'Brak zajecia biurka do zwolnienia w wybranym dniu.': 'There is no desk claim to release on the selected day.'
 'Ten uzytkownik ma juz przydzielone biurko w wybranym dniu.': 'This user already has a desk assigned on the selected day.'
 'Wybrane biurko nie jest wolne.': 'The selected desk is not free.'

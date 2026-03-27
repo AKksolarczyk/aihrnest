@@ -7,6 +7,7 @@ namespace App\Workspace\Application\Command\ClaimDesk;
 use App\Workspace\Domain\Model\DeskClaim;
 use App\Workspace\Domain\Repository\DeskClaimRepositoryInterface;
 use App\Workspace\Domain\Repository\DeskWaitlistRepositoryInterface;
+use App\Workspace\Domain\Repository\IssueReportRepositoryInterface;
 use App\Workspace\Domain\Repository\OfficeLayoutRepositoryInterface;
 use App\Workspace\Domain\Repository\UserRepositoryInterface;
 use App\Workspace\Domain\Repository\VacationRepositoryInterface;
@@ -21,6 +22,7 @@ final class ClaimDeskHandler
         private readonly VacationRepositoryInterface $vacationRepository,
         private readonly DeskClaimRepositoryInterface $deskClaimRepository,
         private readonly DeskWaitlistRepositoryInterface $deskWaitlistRepository,
+        private readonly IssueReportRepositoryInterface $issueReportRepository,
         private readonly WorkspaceTransactionInterface $workspaceTransaction,
         private readonly OfficeLayoutRepositoryInterface $officeLayoutRepository,
         private readonly WorkspacePlanner $workspacePlanner,
@@ -40,12 +42,17 @@ final class ClaimDeskHandler
         $users = $this->userRepository->findAllOrderedByName();
         $vacations = $this->vacationRepository->findAll();
         $deskClaims = $this->deskClaimRepository->findAll();
+        $issueReports = $this->issueReportRepository->findOpen();
 
         if (!isset($deskMap[$command->deskId])) {
             throw new InvalidArgumentException('Wybrane biurko nie istnieje.');
         }
 
-        $dailyPlan = $this->workspacePlanner->buildDailyPlan($command->date, $users, $vacations, $deskClaims, $rooms);
+        if (isset($this->workspacePlanner->indexUnavailableDeskIds($issueReports)[$command->deskId])) {
+            throw new InvalidArgumentException('Wybrane biurko jest tymczasowo niedostepne z powodu otwartego zgloszenia awarii.');
+        }
+
+        $dailyPlan = $this->workspacePlanner->buildDailyPlan($command->date, $users, $vacations, $deskClaims, $rooms, $issueReports);
 
         if ($dailyPlan->userHasDesk($command->userId)) {
             throw new InvalidArgumentException('Ten uzytkownik ma juz przydzielone biurko w wybranym dniu.');

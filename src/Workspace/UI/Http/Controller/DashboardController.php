@@ -6,6 +6,8 @@ namespace App\Workspace\UI\Http\Controller;
 
 use App\Workspace\Application\Command\ClaimDesk\ClaimDeskCommand;
 use App\Workspace\Application\Command\ClaimDesk\ClaimDeskHandler;
+use App\Workspace\Application\Command\CloseIssueReport\CloseIssueReportCommand;
+use App\Workspace\Application\Command\CloseIssueReport\CloseIssueReportHandler;
 use App\Workspace\Application\Command\CreateRecurringDeskReservation\CreateRecurringDeskReservationCommand;
 use App\Workspace\Application\Command\CreateRecurringDeskReservation\CreateRecurringDeskReservationHandler;
 use App\Workspace\Application\Command\JoinDeskWaitlist\JoinDeskWaitlistCommand;
@@ -195,7 +197,7 @@ final class DashboardController extends AbstractController
         $date = $request->request->getString('date', date('Y-m-d'));
 
         try {
-            $handler->handle(new ReportIssueCommand(
+            $result = $handler->handle(new ReportIssueCommand(
                 $request->request->getString('userId'),
                 $request->request->getString('deskId') ?: null,
                 $request->request->getString('roomId') ?: null,
@@ -203,12 +205,47 @@ final class DashboardController extends AbstractController
                 $request->request->getString('description'),
             ));
 
-            $session->getFlashBag()->add('success', $this->translator->trans('flash.issue.created'));
+            $flashKey = $result->notifiedAdminsCount > 0 ? 'flash.issue.created_notified' : 'flash.issue.created';
+            $session->getFlashBag()->add('success', $this->translator->trans($flashKey, [
+                '%count%' => (string) $result->notifiedAdminsCount,
+            ]));
         } catch (Throwable $exception) {
             $session->getFlashBag()->add('error', $this->translator->trans($exception->getMessage()));
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
+    }
+
+    #[Route('/admin/issues/close', name: 'app_admin_issue_close', methods: ['POST'])]
+    public function closeIssue(
+        Request $request,
+        SessionInterface $session,
+        CloseIssueReportHandler $handler,
+    ): RedirectResponse {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $date = $request->request->getString('date', date('Y-m-d'));
+        $activeUserId = $request->request->getString('activeUserId');
+        $activeTab = $request->request->getString('tab', 'admin-reports');
+
+        try {
+            $handler->handle(new CloseIssueReportCommand(
+                $request->request->getString('issueReportId'),
+            ));
+
+            $session->getFlashBag()->add('success', $this->translator->trans('flash.issue.closed'));
+        } catch (Throwable $exception) {
+            $session->getFlashBag()->add('error', $this->translator->trans($exception->getMessage()));
+        }
+
+        if ($activeUserId !== '') {
+            $session->set('active_user_id', $activeUserId);
+        }
+
+        return $this->redirectToRoute('app_dashboard', [
+            'date' => $date,
+            'tab' => $activeTab,
+        ]);
     }
 
     #[Route('/people/hrnest/pair', name: 'app_people_hrnest_pair', methods: ['POST'])]
