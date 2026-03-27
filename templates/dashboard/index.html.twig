@@ -626,7 +626,7 @@
             position: relative;
             margin-top: 16px;
             min-height: 280px;
-            padding: 22px;
+            padding: 18px;
             border-radius: 28px;
             border: 1px solid var(--control-border);
             background: var(--map-bg);
@@ -636,13 +636,13 @@
         .desk-map::before {
             content: "";
             position: absolute;
-            inset: 18px;
+            inset: 14px;
             border-radius: 22px;
             border: 1px dashed var(--control-border);
             background:
                 linear-gradient(var(--map-grid-line) 1px, transparent 1px),
                 linear-gradient(90deg, var(--map-grid-line) 1px, transparent 1px);
-            background-size: 56px 56px;
+            background-size: 48px 48px;
             pointer-events: none;
         }
 
@@ -650,19 +650,40 @@
             position: relative;
             z-index: 1;
             display: grid;
-            gap: 16px;
+            gap: 12px;
             align-items: stretch;
         }
 
         .desk-map-item {
-            min-height: 124px;
+            min-height: 108px;
             display: grid;
             align-content: start;
         }
 
         .desk-map-item .desk {
             height: 100%;
-            min-height: 124px;
+            min-height: 108px;
+            padding: 14px;
+            border-radius: 18px;
+        }
+
+        .desk-map-item .desk strong {
+            font-size: 0.92rem;
+        }
+
+        .desk-map-item .desk p {
+            font-size: 0.84rem;
+            margin-bottom: 8px;
+        }
+
+        .desk-map-item .desk .pill {
+            font-size: 0.76rem;
+            padding: 6px 10px;
+        }
+
+        .desk-map-item .desk .desk-action {
+            padding: 8px 12px;
+            font-size: 0.82rem;
         }
 
         .map-legend {
@@ -1459,7 +1480,7 @@
                                                 <div class="desk-map">
                                                     <div
                                                         class="desk-map-room"
-                                                        style="grid-template-columns: repeat({{ room.map.width }}, minmax(72px, 1fr)); grid-template-rows: repeat({{ room.map.height }}, minmax(56px, auto));"
+                                                        style="grid-template-columns: repeat({{ room.map.width }}, minmax(64px, 1fr)); grid-template-rows: repeat({{ room.map.height }}, minmax(50px, auto));"
                                                     >
                                                         {% for desk in room.desks %}
                                                             <div
