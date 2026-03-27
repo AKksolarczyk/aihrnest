@@ -136,17 +136,25 @@ final class GetDashboardHandler
     private function buildRoomsView(array $rooms, DailyPlan $dailyPlan, array $deskMap): array
     {
         $view = [];
+        $roomLayouts = $this->roomLayouts();
 
         foreach ($rooms as $room) {
             $desks = [];
+            $layout = $roomLayouts[$room->id()] ?? [
+                'width' => 2,
+                'height' => 2,
+                'desks' => [],
+            ];
 
             foreach ($room->desks() as $desk) {
                 $occupancy = $dailyPlan->occupancy()[$desk->id()] ?? null;
+                $position = $layout['desks'][$desk->id()] ?? ['x' => 1, 'y' => 1];
                 $desks[] = [
                     'id' => $desk->id(),
                     'label' => $deskMap[$desk->id()]['label'] ?? $desk->id(),
                     'occupancy' => $occupancy,
                     'isFree' => $occupancy === null,
+                    'position' => $position,
                 ];
             }
 
@@ -154,6 +162,10 @@ final class GetDashboardHandler
                 'id' => $room->id(),
                 'name' => $room->name(),
                 'description' => $room->description(),
+                'map' => [
+                    'width' => $layout['width'],
+                    'height' => $layout['height'],
+                ],
                 'desks' => $desks,
             ];
         }
@@ -243,6 +255,45 @@ final class GetDashboardHandler
             'id' => $user->id(),
             'name' => $user->name(),
             'team' => $user->team(),
+        ];
+    }
+
+    /**
+     * @return array<string, array{width: int, height: int, desks: array<string, array{x: int, y: int}>}>
+     */
+    private function roomLayouts(): array
+    {
+        return [
+            'focus-room' => [
+                'width' => 6,
+                'height' => 4,
+                'desks' => [
+                    'A-01' => ['x' => 2, 'y' => 1],
+                    'A-02' => ['x' => 5, 'y' => 1],
+                    'A-03' => ['x' => 2, 'y' => 3],
+                    'A-04' => ['x' => 5, 'y' => 3],
+                ],
+            ],
+            'client-room' => [
+                'width' => 7,
+                'height' => 4,
+                'desks' => [
+                    'B-01' => ['x' => 1, 'y' => 2],
+                    'B-02' => ['x' => 3, 'y' => 2],
+                    'B-03' => ['x' => 5, 'y' => 2],
+                    'B-04' => ['x' => 7, 'y' => 2],
+                ],
+            ],
+            'makers-room' => [
+                'width' => 6,
+                'height' => 5,
+                'desks' => [
+                    'C-01' => ['x' => 2, 'y' => 1],
+                    'C-02' => ['x' => 5, 'y' => 1],
+                    'C-03' => ['x' => 2, 'y' => 4],
+                    'C-04' => ['x' => 5, 'y' => 4],
+                ],
+            ],
         ];
     }
 }
