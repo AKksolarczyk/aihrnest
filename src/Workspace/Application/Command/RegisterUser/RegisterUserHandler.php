@@ -46,6 +46,7 @@ final class RegisterUserHandler
             $command->email,
             $command->team,
             'temporary-hash',
+            $command->locale,
             $assignedDeskId,
             $command->schedule,
         );
@@ -58,6 +59,7 @@ final class RegisterUserHandler
             $temporaryUser->email(),
             $temporaryUser->team(),
             $hashedPassword,
+            $temporaryUser->locale(),
             $assignedDeskId,
             $command->schedule,
         );

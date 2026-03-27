@@ -14,6 +14,8 @@ use App\Workspace\Application\Command\RequestVacation\RequestVacationCommand;
 use App\Workspace\Application\Command\RequestVacation\RequestVacationHandler;
 use App\Workspace\Application\Command\ReportIssue\ReportIssueCommand;
 use App\Workspace\Application\Command\ReportIssue\ReportIssueHandler;
+use App\Workspace\Application\Command\ReleaseDeskClaim\ReleaseDeskClaimCommand;
+use App\Workspace\Application\Command\ReleaseDeskClaim\ReleaseDeskClaimHandler;
 use App\Workspace\Application\Query\GetDashboard\GetDashboardHandler;
 use App\Workspace\Application\Query\GetDashboard\GetDashboardQuery;
 use App\Workspace\Domain\Model\DeskLabel;
@@ -74,9 +76,9 @@ final class DashboardController extends AbstractController
                 new DateTimeImmutable($request->request->getString('endDate')),
             ));
 
-            $session->getFlashBag()->add('success', 'Urlop zostal zapisany, a przypisane biurko zostanie zwolnione.');
+            $session->getFlashBag()->add('success', $this->trans('flash.vacation.saved'));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $exception->getMessage());
+            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
@@ -97,9 +99,31 @@ final class DashboardController extends AbstractController
                 new DateTimeImmutable($date),
             ));
 
-            $session->getFlashBag()->add('success', 'Wolne biurko zostalo zajete.');
+            $session->getFlashBag()->add('success', $this->trans('flash.claim.created'));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $exception->getMessage());
+            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
+        }
+
+        return $this->redirectToRoute('app_dashboard', ['date' => $date]);
+    }
+
+    #[Route('/claims/release', name: 'app_desk_claim_release', methods: ['POST'])]
+    public function releaseDeskClaim(
+        Request $request,
+        SessionInterface $session,
+        ReleaseDeskClaimHandler $handler,
+    ): RedirectResponse {
+        $date = $request->request->getString('date', date('Y-m-d'));
+
+        try {
+            $handler->handle(new ReleaseDeskClaimCommand(
+                $request->request->getString('userId'),
+                new DateTimeImmutable($date),
+            ));
+
+            $session->getFlashBag()->add('success', $this->trans('flash.claim.released'));
+        } catch (Throwable $exception) {
+            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
@@ -120,9 +144,9 @@ final class DashboardController extends AbstractController
                 new DateTimeImmutable($date),
             ));
 
-            $session->getFlashBag()->add('success', 'Uzytkownik zostal dodany do waitlisty dla wybranego biurka.');
+            $session->getFlashBag()->add('success', $this->trans('flash.waitlist.joined'));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $exception->getMessage());
+            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
@@ -145,12 +169,12 @@ final class DashboardController extends AbstractController
                 $request->request->all('weekdays'),
             ));
 
-            $session->getFlashBag()->add(
-                'success',
-                sprintf('Zapisano rezerwacje cykliczna. Utworzono %d zajec, pominieto %d konfliktow.', $result->createdClaims, $result->skippedClaims),
-            );
+            $session->getFlashBag()->add('success', $this->trans('flash.recurring.created', [
+                '%created%' => (string) $result->createdClaims,
+                '%skipped%' => (string) $result->skippedClaims,
+            ]));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $exception->getMessage());
+            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
@@ -173,9 +197,9 @@ final class DashboardController extends AbstractController
                 $request->request->getString('description'),
             ));
 
-            $session->getFlashBag()->add('success', 'Zgloszenie problemu zostalo zapisane.');
+            $session->getFlashBag()->add('success', $this->trans('flash.issue.created'));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $exception->getMessage());
+            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
@@ -187,6 +211,7 @@ final class DashboardController extends AbstractController
         SessionInterface $session,
         UserRepositoryInterface $userRepository,
         HrnestClient $hrnestClient,
+        WorkspaceTransactionInterface $transaction,
     ): RedirectResponse {
         $date = $request->request->getString('date', date('Y-m-d'));
         $userId = $request->request->getString('userId');
@@ -198,27 +223,39 @@ final class DashboardController extends AbstractController
                 throw new InvalidArgumentException('Nie znaleziono lokalnego uzytkownika do parowania.');
             }
 
+            if ($user->hrnestEmployeeId() !== null) {
+                $session->getFlashBag()->add('success', sprintf('%s jest juz sparowany z HRnest.', $user->name()));
+
+                return $this->redirectToRoute('app_dashboard', [
+                    'date' => $date,
+                    'tab' => 'people',
+                ]);
+            }
+
             $matches = $hrnestClient->searchPeopleByEmail($user->email());
 
             if ($matches === []) {
                 $session->getFlashBag()->add('error', sprintf('Nie znaleziono %s (%s) w HRnest.', $user->name(), $user->email()));
             } else {
                 $match = $this->findExactEmailMatch($matches, $user->email()) ?? $matches[0];
+                $user->pairWithHrnest($match->externalId);
+                $userRepository->save($user);
+                $transaction->flush();
                 $session->getFlashBag()->add(
                     'success',
                     sprintf(
-                        'Znaleziono dopasowanie w HRnest dla %s: %s (%s), zespol: %s.',
+                        'Sparowano %s z HRnest: %s (%s), ID: %s.',
                         $user->name(),
                         $match->name,
                         $match->email,
-                        $match->team,
+                        $match->externalId,
                     ),
                 );
             }
         } catch (HrnestApiException|InvalidArgumentException $exception) {
             $session->getFlashBag()->add('error', $exception->getMessage());
-        } catch (Throwable) {
-            $session->getFlashBag()->add('error', 'Nie udalo sie wykonac parowania z HRnest.');
+        } catch (Throwable $exception) {
+            $session->getFlashBag()->add('error', $exception->getMessage() !== '' ? $exception->getMessage() : 'Nie udalo sie wykonac parowania z HRnest.');
         }
 
         return $this->redirectToRoute('app_dashboard', [
@@ -269,9 +306,11 @@ final class DashboardController extends AbstractController
 
             $transaction->flush();
 
-            $session->getFlashBag()->add('success', sprintf('Zaktualizowano nazwy %d biurek.', $updatedDesks));
+            $session->getFlashBag()->add('success', $this->trans('flash.admin.desks_updated', [
+                '%count%' => (string) $updatedDesks,
+            ]));
         } catch (Throwable $exception) {
-            $session->getFlashBag()->add('error', $exception->getMessage());
+            $session->getFlashBag()->add('error', $this->trans($exception->getMessage()));
         }
 
         if ($activeUserId !== '') {

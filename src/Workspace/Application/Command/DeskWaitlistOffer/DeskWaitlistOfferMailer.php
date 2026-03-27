@@ -11,12 +11,14 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class DeskWaitlistOfferMailer
 {
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly TranslatorInterface $translator,
         #[Autowire('%env(MAILER_FROM)%')]
         private readonly string $fromAddress,
     ) {
@@ -33,24 +35,34 @@ final class DeskWaitlistOfferMailer
         $claimUrl = $this->urlGenerator->generate('app_desk_waitlist_claim', [
             'token' => $claimToken,
         ], UrlGeneratorInterface::ABSOLUTE_URL);
+        $locale = $user->locale();
 
         $email = (new Email())
             ->from(new Address($this->fromAddress, 'Smart Desk'))
             ->to($user->email())
-            ->subject('Biurko z waitlisty jest juz wolne')
+            ->subject($this->translator->trans('mail.waitlist.subject', locale: $locale))
             ->text(
-                "Czesc {$user->name()},\n\n".
-                "Biurko {$deskLabel} ({$roomName}) na dzien {$entry->date()->format('Y-m-d')} zostalo zwolnione.\n".
-                "Kliknij link, aby je zajac:\n{$claimUrl}\n\n".
-                "Link dziala tylko wtedy, gdy biurko nadal jest wolne."
+                $this->translator->trans('mail.waitlist.text', [
+                    '%name%' => $user->name(),
+                    '%desk%' => $deskLabel,
+                    '%room%' => $roomName,
+                    '%date%' => $entry->date()->format('Y-m-d'),
+                    '%url%' => $claimUrl,
+                ], locale: $locale)
             )
             ->html(
-                '<p>Czesc '.htmlspecialchars($user->name(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').',</p>'.
-                '<p>Biurko <strong>'.htmlspecialchars($deskLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</strong> '.
-                '('.htmlspecialchars($roomName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').') na dzien '.
-                htmlspecialchars($entry->date()->format('Y-m-d'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').' zostalo zwolnione.</p>'.
-                '<p><a href="'.htmlspecialchars($claimUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'">Zajmij to biurko</a></p>'.
-                '<p>Link zadziala tylko wtedy, gdy miejsce nadal bedzie wolne.</p>'
+                '<p>'.htmlspecialchars($this->translator->trans('mail.waitlist.greeting', [
+                    '%name%' => $user->name(),
+                ], locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>'.
+                '<p>'.htmlspecialchars($this->translator->trans('mail.waitlist.intro', [
+                    '%desk%' => $deskLabel,
+                    '%room%' => $roomName,
+                    '%date%' => $entry->date()->format('Y-m-d'),
+                ], locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>'.
+                '<p><a href="'.htmlspecialchars($claimUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'">'.
+                htmlspecialchars($this->translator->trans('mail.waitlist.cta', locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').
+                '</a></p>'.
+                '<p>'.htmlspecialchars($this->translator->trans('mail.waitlist.outro', locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>'
             );
 
         $this->mailer->send($email);

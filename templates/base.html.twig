@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}{{ 'app.title'|trans }}{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         <script>
             (() => {
@@ -13,6 +13,45 @@
             })();
         </script>
         <style>
+            .locale-switcher {
+                position: fixed;
+                left: 20px;
+                bottom: 20px;
+                z-index: 1000;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.94);
+                border: 1px solid rgba(148, 163, 184, 0.22);
+                box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+                backdrop-filter: blur(14px);
+            }
+
+            .locale-link {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 48px;
+                padding: 10px 12px;
+                border-radius: 999px;
+                text-decoration: none;
+                color: #0f172a;
+                font: 700 0.85rem/1 "Manrope", "Segoe UI", sans-serif;
+                transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+            }
+
+            .locale-link:hover {
+                transform: translateY(-1px);
+                background: rgba(15, 23, 42, 0.06);
+            }
+
+            .locale-link.active {
+                background: linear-gradient(135deg, #145af2 0%, #2563eb 100%);
+                color: #eff6ff;
+            }
+
             .theme-toggle {
                 position: fixed;
                 right: 20px;
@@ -50,7 +89,26 @@
                 box-shadow: 0 22px 46px rgba(2, 6, 23, 0.42);
             }
 
+            :root[data-theme="dark"] .locale-switcher {
+                background: rgba(4, 10, 22, 0.94);
+                border-color: rgba(148, 163, 184, 0.14);
+                box-shadow: 0 22px 46px rgba(2, 6, 23, 0.42);
+            }
+
+            :root[data-theme="dark"] .locale-link {
+                color: #f8fafc;
+            }
+
+            :root[data-theme="dark"] .locale-link:hover {
+                background: rgba(148, 163, 184, 0.12);
+            }
+
             @media (max-width: 720px) {
+                .locale-switcher {
+                    left: 14px;
+                    bottom: 14px;
+                }
+
                 .theme-toggle {
                     right: 14px;
                     bottom: 14px;
@@ -76,9 +134,21 @@
         {% endif %}
     </head>
     <body>
-        <button type="button" class="theme-toggle" data-theme-toggle aria-label="Zmien motyw">
+        <div class="locale-switcher" aria-label="{{ 'language.switch'|trans }}">
+            {% for locale in ['pl', 'en'] %}
+                <a
+                    class="locale-link {% if app.request.locale == locale %}active{% endif %}"
+                    href="{{ path('app_locale_switch', {locale: locale}) }}"
+                    lang="{{ locale }}"
+                    hreflang="{{ locale }}"
+                >
+                    {{ ('language.label.' ~ locale)|trans }}
+                </a>
+            {% endfor %}
+        </div>
+        <button type="button" class="theme-toggle" data-theme-toggle aria-label="{{ 'theme.toggle'|trans }}">
             <span data-theme-icon>🌙</span>
-            <span data-theme-label>Ciemny</span>
+            <span data-theme-label>{{ 'theme.dark'|trans }}</span>
         </button>
         {% block body %}{% endblock %}
         <script>
@@ -100,7 +170,7 @@
                         icon.textContent = nextTheme === 'dark' ? '🌙' : '☀️';
                     }
                     if (label) {
-                        label.textContent = nextTheme === 'dark' ? 'Ciemny' : 'Jasny';
+                        label.textContent = nextTheme === 'dark' ? '{{ 'theme.dark'|trans }}' : '{{ 'theme.light'|trans }}';
                     }
                 };
 

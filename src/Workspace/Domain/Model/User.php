@@ -13,8 +13,14 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\Entity]
 #[ORM\Table(name: 'workspace_users')]
 #[ORM\UniqueConstraint(name: 'uniq_workspace_users_email', columns: ['email'])]
+#[ORM\UniqueConstraint(name: 'uniq_workspace_users_hrnest_employee_id', columns: ['hrnest_employee_id'])]
 final class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    public const DEFAULT_LOCALE = 'pl';
+
+    /** @var list<string> */
+    public const SUPPORTED_LOCALES = ['pl', 'en'];
+
     /**
      * @param list<string> $roles
      * @param list<string> $schedule
@@ -27,8 +33,12 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         private string $name,
         #[ORM\Column(type: 'string', length: 180)]
         private string $email,
+        #[ORM\Column(type: 'string', length: 64, nullable: true)]
+        private ?string $hrnestEmployeeId,
         #[ORM\Column(type: 'string', length: 255)]
         private string $team,
+        #[ORM\Column(type: 'string', length: 5, options: ['default' => self::DEFAULT_LOCALE])]
+        private string $locale,
         #[ORM\Column(name: 'password_hash', type: 'string', length: 255)]
         private string $passwordHash,
         #[ORM\Column(type: 'json')]
@@ -57,6 +67,8 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
             throw new InvalidArgumentException('User email cannot be empty.');
         }
 
+        $this->locale = self::normalizeLocale($this->locale);
+
         if ($this->passwordHash === '') {
             throw new InvalidArgumentException('Password hash cannot be empty.');
         }
@@ -79,6 +91,7 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         string $email,
         string $team,
         string $passwordHash,
+        string $locale = self::DEFAULT_LOCALE,
         ?string $assignedDeskId = null,
         array $schedule = [],
         int $vacationDaysTotal = 26,
@@ -88,7 +101,9 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
             $id,
             trim($name),
             mb_strtolower(trim($email)),
+            null,
             trim($team),
+            $locale,
             $passwordHash,
             self::normalizeRoles($roles),
             false,
@@ -114,12 +129,15 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         array $schedule = [],
         int $vacationDaysTotal = 26,
         array $roles = ['ROLE_USER'],
+        string $locale = self::DEFAULT_LOCALE,
     ): self {
         return new self(
             $id,
             trim($name),
             mb_strtolower(trim($email)),
+            $id,
             trim($team),
+            $locale,
             $passwordHash,
             self::normalizeRoles($roles),
             true,
@@ -146,9 +164,19 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
+    public function hrnestEmployeeId(): ?string
+    {
+        return $this->hrnestEmployeeId;
+    }
+
     public function team(): string
     {
         return $this->team;
+    }
+
+    public function locale(): string
+    {
+        return $this->locale;
     }
 
     public function assignedDeskId(): ?string
@@ -223,6 +251,22 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->emailConfirmationToken = null;
     }
 
+    public function pairWithHrnest(string $hrnestEmployeeId): void
+    {
+        $normalizedId = trim($hrnestEmployeeId);
+
+        if ($normalizedId === '') {
+            throw new InvalidArgumentException('HRnest employee id cannot be empty.');
+        }
+
+        $this->hrnestEmployeeId = $normalizedId;
+    }
+
+    public function changeLocale(string $locale): void
+    {
+        $this->locale = self::normalizeLocale($locale);
+    }
+
     public function isScheduledOn(DateTimeImmutable $date): bool
     {
         return in_array(strtolower($date->format('l')), $this->schedule, true);
@@ -282,6 +326,17 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return array_values(array_unique($normalized));
+    }
+
+    private static function normalizeLocale(string $locale): string
+    {
+        $normalized = strtolower(trim($locale));
+
+        if (!in_array($normalized, self::SUPPORTED_LOCALES, true)) {
+            throw new InvalidArgumentException(sprintf('Unsupported user locale "%s".', $locale));
+        }
+
+        return $normalized;
     }
 
     public function getPassword(): string

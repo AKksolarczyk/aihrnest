@@ -13,6 +13,7 @@ final readonly class RegisterUserCommand
         public string $name,
         public string $email,
         public string $team,
+        public string $locale,
         public string $plainPassword,
         public ?string $assignedDeskId,
         public array $schedule,
