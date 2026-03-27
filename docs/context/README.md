@@ -8,6 +8,9 @@ Jeżeli implementacja, pomysł lub nowa decyzja są sprzeczne z dokumentami w `d
 
 Kolejność czytania:
 - [product.md](/Users/jaroslawkasica/srv/aiCoding/docs/context/product.md)
+- [ubiquitous-language.md](/Users/jaroslawkasica/srv/aiCoding/docs/context/ubiquitous-language.md)
+- [business-rules.md](/Users/jaroslawkasica/srv/aiCoding/docs/context/business-rules.md)
+- [invariants.md](/Users/jaroslawkasica/srv/aiCoding/docs/context/invariants.md)
 - [architecture.md](/Users/jaroslawkasica/srv/aiCoding/docs/context/architecture.md)
 - [bounded-contexts.md](/Users/jaroslawkasica/srv/aiCoding/docs/context/bounded-contexts.md)
 - [coding-rules.md](/Users/jaroslawkasica/srv/aiCoding/docs/context/coding-rules.md)
@@ -18,6 +21,7 @@ Zasady obowiązujące od początku projektu:
 - architektura domenowa ma być zgodna z DDD
 - komunikacja wewnątrz aplikacji ma respektować CQRS
 - kod ma być zgodny z dobrymi praktykami PHP i Symfony
+- obecnie akceptujemy atrybuty Doctrine bezpośrednio w modelach domenowych
 - integracja z HRnest nie jest realizowana teraz, wracamy do niej na końcu
 - do czasu integracji z HRnest używamy wewnętrznego modelu absencji lub mocka
 

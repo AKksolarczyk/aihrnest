@@ -39,6 +39,9 @@
         .flash, .error { padding: 12px 14px; border-radius: 16px; font-weight: 700; }
         .flash.success { background: rgba(15,159,110,0.1); color: #0f9f6e; }
         .flash.error, .error { background: rgba(220,38,38,0.08); color: #dc2626; }
+        .dev-hint { display: grid; gap: 10px; padding: 16px 18px; border-radius: 20px; border: 1px dashed var(--auth-field-border); background: color-mix(in srgb, var(--auth-card) 88%, transparent); }
+        .dev-hint strong { font-size: 0.92rem; }
+        .dev-hint select { border: 1px solid var(--auth-field-border); background: var(--auth-field-bg); color: var(--auth-text); border-radius: 14px; padding: 12px 14px; font: inherit; }
         a { color: #145af2; font-weight: 700; text-decoration: none; }
     </style>
 {% endblock %}
@@ -62,15 +65,15 @@
                     <div class="error">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
                 {% endif %}
 
-                <form method="post">
+                <form method="post" data-login-form>
                     <label>
                         Email
-                        <input type="email" name="_username" value="{{ last_username }}" autocomplete="email" required autofocus>
+                        <input type="email" name="_username" value="{{ last_username }}" autocomplete="email" required autofocus data-login-username>
                     </label>
 
                     <label>
                         Haslo
-                        <input type="password" name="_password" autocomplete="current-password" required>
+                        <input type="password" name="_password" autocomplete="current-password" required data-login-password>
                     </label>
 
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
@@ -79,7 +82,50 @@
                 </form>
 
                 <p class="muted">Nie masz konta? <a href="{{ path('app_register') }}">Zarejestruj sie</a></p>
+
+                {% if app.environment == 'dev' %}
+                    <div class="dev-hint">
+                        <strong>Szybkie logowanie dev</strong>
+                        <label>
+                            Konto testowe
+                            <select data-login-preset>
+                                <option value="anna.kowalska@example.com|password123">Anna Kowalska</option>
+                                <option value="piotr.nowak@example.com|password123">Piotr Nowak (admin)</option>
+                                <option value="marta.zielinska@example.com|password123">Marta Zielinska</option>
+                                <option value="tomasz.wisniewski@example.com|password123">Tomasz Wisniewski</option>
+                                <option value="julia.kaczmarek@example.com|password123">Julia Kaczmarek</option>
+                            </select>
+                        </label>
+                        <p class="muted">Po otwarciu strony pierwsze konto jest podstawione automatycznie. Mozesz od razu kliknac "Zaloguj sie".</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
+
+    {% if app.environment == 'dev' %}
+        <script>
+            (() => {
+                const preset = document.querySelector('[data-login-preset]');
+                const username = document.querySelector('[data-login-username]');
+                const password = document.querySelector('[data-login-password]');
+
+                if (!preset || !username || !password) {
+                    return;
+                }
+
+                const applyPreset = () => {
+                    const [email, plainPassword] = preset.value.split('|');
+                    username.value = email ?? '';
+                    password.value = plainPassword ?? '';
+                };
+
+                if (!username.value && !password.value) {
+                    applyPreset();
+                }
+
+                preset.addEventListener('change', applyPreset);
+            })();
+        </script>
+    {% endif %}
 {% endblock %}
