@@ -6,6 +6,7 @@ namespace App\Workspace\Application\Command\DeskWaitlistOffer;
 
 use App\Workspace\Domain\Model\DeskWaitlistEntry;
 use App\Workspace\Domain\Model\User;
+use Twig\Environment;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
@@ -19,6 +20,7 @@ final class DeskWaitlistOfferMailer
         private readonly MailerInterface $mailer,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly TranslatorInterface $translator,
+        private readonly Environment $twig,
         #[Autowire('%env(MAILER_FROM)%')]
         private readonly string $fromAddress,
     ) {
@@ -50,20 +52,14 @@ final class DeskWaitlistOfferMailer
                     '%url%' => $claimUrl,
                 ], locale: $locale)
             )
-            ->html(
-                '<p>'.htmlspecialchars($this->translator->trans('mail.waitlist.greeting', [
-                    '%name%' => $user->name(),
-                ], locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>'.
-                '<p>'.htmlspecialchars($this->translator->trans('mail.waitlist.intro', [
-                    '%desk%' => $deskLabel,
-                    '%room%' => $roomName,
-                    '%date%' => $entry->date()->format('Y-m-d'),
-                ], locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>'.
-                '<p><a href="'.htmlspecialchars($claimUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'">'.
-                htmlspecialchars($this->translator->trans('mail.waitlist.cta', locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').
-                '</a></p>'.
-                '<p>'.htmlspecialchars($this->translator->trans('mail.waitlist.outro', locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>'
-            );
+            ->html($this->twig->render('email/waitlist_offer.html.twig', [
+                'locale' => $locale,
+                'name' => $user->name(),
+                'deskLabel' => $deskLabel,
+                'roomName' => $roomName,
+                'date' => $entry->date()->format('Y-m-d'),
+                'claimUrl' => $claimUrl,
+            ]));
 
         $this->mailer->send($email);
     }

@@ -87,6 +87,8 @@ flash:
     desks_updated: 'Zaktualizowano nazwy %count% biurek.'
 
 mail:
+  common:
+    footer: 'Smart Desk • lokalny email developerski z aplikacji.'
   registration:
     subject: 'Potwierdz konto Smart Desk'
     greeting: 'Czesc %name%,'

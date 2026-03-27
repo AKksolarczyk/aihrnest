@@ -1,0 +1,25 @@
+{% extends 'email/base.html.twig' %}
+
+{% block title %}{{ 'mail.waitlist.subject'|trans({}, null, locale) }}{% endblock %}
+{% block hero_title %}{{ 'mail.waitlist.subject'|trans({}, null, locale) }}{% endblock %}
+{% block hero_lead %}{{ 'mail.waitlist.intro'|trans({'%desk%': deskLabel, '%room%': roomName, '%date%': date}, null, locale) }}{% endblock %}
+
+{% block content %}
+    <p style="margin:0 0 18px;font-size:16px;line-height:1.7;color:#44403c;">{{ 'mail.waitlist.greeting'|trans({'%name%': name}, null, locale) }}</p>
+
+    <div style="display:grid;gap:12px;margin:0 0 24px;">
+        <div style="padding:16px 18px;border-radius:20px;border:1px solid rgba(113,113,122,0.14);background:rgba(245,245,244,0.92);">
+            <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.16em;color:#78716c;font-weight:800;margin-bottom:6px;">Desk</div>
+            <div style="font-size:16px;font-weight:800;color:#292524;">{{ deskLabel }}</div>
+            <div style="margin-top:4px;font-size:14px;color:#57534e;">{{ roomName }} • {{ date }}</div>
+        </div>
+    </div>
+
+    <div style="margin:0 0 20px;">
+        <a href="{{ claimUrl }}" style="display:inline-block;padding:14px 20px;border-radius:999px;background:linear-gradient(135deg, #3f3f46 0%, #71717a 100%);color:#fafaf9;text-decoration:none;font-weight:800;box-shadow:0 18px 30px rgba(63,63,70,0.22);">
+            {{ 'mail.waitlist.cta'|trans({}, null, locale) }}
+        </a>
+    </div>
+
+    <p style="margin:0;font-size:14px;line-height:1.7;color:#78716c;">{{ 'mail.waitlist.outro'|trans({}, null, locale) }}</p>
+{% endblock %}

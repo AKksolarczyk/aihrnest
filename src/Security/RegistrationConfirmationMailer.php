@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Security;
 
 use App\Workspace\Domain\Model\User;
+use Twig\Environment;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
@@ -18,6 +19,7 @@ final class RegistrationConfirmationMailer
         private readonly MailerInterface $mailer,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly TranslatorInterface $translator,
+        private readonly Environment $twig,
         #[Autowire('%env(MAILER_FROM)%')]
         private readonly string $fromAddress,
     ) {
@@ -46,16 +48,11 @@ final class RegistrationConfirmationMailer
                     '%url%' => $confirmationUrl,
                 ], locale: $locale)
             )
-            ->html(
-                '<p>'.htmlspecialchars($this->translator->trans('mail.registration.greeting', [
-                    '%name%' => $user->name(),
-                ], locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>'.
-                '<p>'.htmlspecialchars($this->translator->trans('mail.registration.intro', locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>'.
-                '<p><a href="'.htmlspecialchars($confirmationUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'">'.
-                htmlspecialchars($this->translator->trans('mail.registration.cta', locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').
-                '</a></p>'.
-                '<p>'.htmlspecialchars($this->translator->trans('mail.registration.outro', locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>'
-            );
+            ->html($this->twig->render('email/registration_confirmation.html.twig', [
+                'locale' => $locale,
+                'name' => $user->name(),
+                'confirmationUrl' => $confirmationUrl,
+            ]));
 
         $this->mailer->send($email);
     }

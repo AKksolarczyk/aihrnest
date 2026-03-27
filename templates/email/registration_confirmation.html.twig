@@ -1,0 +1,21 @@
+{% extends 'email/base.html.twig' %}
+
+{% block title %}{{ 'mail.registration.subject'|trans({}, null, locale) }}{% endblock %}
+{% block hero_title %}{{ 'mail.registration.subject'|trans({}, null, locale) }}{% endblock %}
+{% block hero_lead %}{{ 'mail.registration.intro'|trans({}, null, locale) }}{% endblock %}
+
+{% block content %}
+    <p style="margin:0 0 18px;font-size:16px;line-height:1.7;color:#44403c;">{{ 'mail.registration.greeting'|trans({'%name%': name}, null, locale) }}</p>
+    <p style="margin:0 0 24px;font-size:15px;line-height:1.72;color:#57534e;">{{ 'mail.registration.outro'|trans({}, null, locale) }}</p>
+
+    <div style="margin:0 0 24px;">
+        <a href="{{ confirmationUrl }}" style="display:inline-block;padding:14px 20px;border-radius:999px;background:linear-gradient(135deg, #3f3f46 0%, #71717a 100%);color:#fafaf9;text-decoration:none;font-weight:800;box-shadow:0 18px 30px rgba(63,63,70,0.22);">
+            {{ 'mail.registration.cta'|trans({}, null, locale) }}
+        </a>
+    </div>
+
+    <div style="padding:18px;border-radius:20px;border:1px solid rgba(113,113,122,0.14);background:rgba(245,245,244,0.9);">
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.16em;color:#78716c;font-weight:800;margin-bottom:8px;">URL</div>
+        <div style="font-size:14px;line-height:1.7;color:#292524;word-break:break-all;">{{ confirmationUrl }}</div>
+    </div>
+{% endblock %}

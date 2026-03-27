@@ -6,6 +6,7 @@ namespace App\Workspace\Application\Command\ReportIssue;
 
 use App\Workspace\Domain\Model\IssueReport;
 use App\Workspace\Domain\Model\User;
+use Twig\Environment;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
@@ -19,6 +20,7 @@ final class IssueReportNotificationMailer
         private readonly MailerInterface $mailer,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly TranslatorInterface $translator,
+        private readonly Environment $twig,
         #[Autowire('%env(MAILER_FROM)%')]
         private readonly string $fromAddress,
     ) {
@@ -43,21 +45,15 @@ final class IssueReportNotificationMailer
                     '%url%' => $dashboardUrl,
                 ], locale: $locale)
             )
-            ->html(
-                '<p>'.htmlspecialchars($this->translator->trans('mail.issue.greeting', [
-                    '%admin%' => $recipient->name(),
-                ], locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>'.
-                '<p>'.htmlspecialchars($this->translator->trans('mail.issue.intro', [
-                    '%reporter%' => $reporter->name(),
-                    '%category%' => $this->translator->trans(sprintf('dashboard.issue_category.%s', $issueReport->category()), locale: $locale),
-                    '%resource%' => $resourceLabel,
-                ], locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>'.
-                '<p><strong>'.htmlspecialchars($this->translator->trans('mail.issue.description_label', locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').':</strong> '.
-                htmlspecialchars($issueReport->description(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'</p>'.
-                '<p><a href="'.htmlspecialchars($dashboardUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'">'.
-                htmlspecialchars($this->translator->trans('mail.issue.cta', locale: $locale), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').
-                '</a></p>'
-            );
+            ->html($this->twig->render('email/issue_report_notification.html.twig', [
+                'locale' => $locale,
+                'adminName' => $recipient->name(),
+                'reporterName' => $reporter->name(),
+                'categoryLabel' => $this->translator->trans(sprintf('dashboard.issue_category.%s', $issueReport->category()), locale: $locale),
+                'resourceLabel' => $resourceLabel,
+                'description' => $issueReport->description(),
+                'dashboardUrl' => $dashboardUrl,
+            ]));
 
         $this->mailer->send($email);
     }
