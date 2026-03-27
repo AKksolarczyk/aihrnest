@@ -901,6 +901,10 @@
             white-space: nowrap;
         }
 
+        .people-paired-badge {
+            align-self: center;
+        }
+
         .people-card.is-hidden {
             display: none;
         }
@@ -1546,11 +1550,15 @@
                                                 <strong>{{ person.name }}</strong>
                                                 <div class="muted">{{ person.email }}</div>
                                             </div>
-                                            <form method="post" action="{{ path('app_people_hrnest_pair') }}">
-                                                <input type="hidden" name="userId" value="{{ person.id }}">
-                                                <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
-                                                <button type="submit" class="desk-action ghost people-pair-button">Paruj</button>
-                                            </form>
+                                            {% if person.hrnestEmployeeId %}
+                                                <span class="pill claim people-paired-badge">Sparowany</span>
+                                            {% else %}
+                                                <form method="post" action="{{ path('app_people_hrnest_pair') }}">
+                                                    <input type="hidden" name="userId" value="{{ person.id }}">
+                                                    <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                                    <button type="submit" class="desk-action ghost people-pair-button">Paruj</button>
+                                                </form>
+                                            {% endif %}
                                         </div>
                                         <div class="muted">{{ person.team }}</div>
                                         <div>{{ person.deskLabel }}</div>

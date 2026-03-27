@@ -254,6 +254,7 @@ final class DashboardController extends AbstractController
         SessionInterface $session,
         UserRepositoryInterface $userRepository,
         HrnestClient $hrnestClient,
+        WorkspaceTransactionInterface $transaction,
     ): RedirectResponse {
         $date = $request->request->getString('date', date('Y-m-d'));
         $userId = $request->request->getString('userId');
@@ -265,27 +266,39 @@ final class DashboardController extends AbstractController
                 throw new InvalidArgumentException('Nie znaleziono lokalnego uzytkownika do parowania.');
             }
 
+            if ($user->hrnestEmployeeId() !== null) {
+                $session->getFlashBag()->add('success', sprintf('%s jest juz sparowany z HRnest.', $user->name()));
+
+                return $this->redirectToRoute('app_dashboard', [
+                    'date' => $date,
+                    'tab' => 'people',
+                ]);
+            }
+
             $matches = $hrnestClient->searchPeopleByEmail($user->email());
 
             if ($matches === []) {
                 $session->getFlashBag()->add('error', sprintf('Nie znaleziono %s (%s) w HRnest.', $user->name(), $user->email()));
             } else {
                 $match = $this->findExactEmailMatch($matches, $user->email()) ?? $matches[0];
+                $user->pairWithHrnest($match->externalId);
+                $userRepository->save($user);
+                $transaction->flush();
                 $session->getFlashBag()->add(
                     'success',
                     sprintf(
-                        'Znaleziono dopasowanie w HRnest dla %s: %s (%s), zespol: %s.',
+                        'Sparowano %s z HRnest: %s (%s), ID: %s.',
                         $user->name(),
                         $match->name,
                         $match->email,
-                        $match->team,
+                        $match->externalId,
                     ),
                 );
             }
         } catch (HrnestApiException|InvalidArgumentException $exception) {
             $session->getFlashBag()->add('error', $exception->getMessage());
-        } catch (Throwable) {
-            $session->getFlashBag()->add('error', 'Nie udalo sie wykonac parowania z HRnest.');
+        } catch (Throwable $exception) {
+            $session->getFlashBag()->add('error', $exception->getMessage() !== '' ? $exception->getMessage() : 'Nie udalo sie wykonac parowania z HRnest.');
         }
 
         return $this->redirectToRoute('app_dashboard', [

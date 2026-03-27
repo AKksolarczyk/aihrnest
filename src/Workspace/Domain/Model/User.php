@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\Entity]
 #[ORM\Table(name: 'workspace_users')]
 #[ORM\UniqueConstraint(name: 'uniq_workspace_users_email', columns: ['email'])]
+#[ORM\UniqueConstraint(name: 'uniq_workspace_users_hrnest_employee_id', columns: ['hrnest_employee_id'])]
 final class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public const DEFAULT_LOCALE = 'pl';
@@ -32,6 +33,8 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         private string $name,
         #[ORM\Column(type: 'string', length: 180)]
         private string $email,
+        #[ORM\Column(type: 'string', length: 64, nullable: true)]
+        private ?string $hrnestEmployeeId,
         #[ORM\Column(type: 'string', length: 255)]
         private string $team,
         #[ORM\Column(type: 'string', length: 5, options: ['default' => self::DEFAULT_LOCALE])]
@@ -98,6 +101,7 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
             $id,
             trim($name),
             mb_strtolower(trim($email)),
+            null,
             trim($team),
             $locale,
             $passwordHash,
@@ -125,12 +129,15 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
         array $schedule = [],
         int $vacationDaysTotal = 26,
         array $roles = ['ROLE_USER'],
+        string $locale = self::DEFAULT_LOCALE,
     ): self {
         return new self(
             $id,
             trim($name),
             mb_strtolower(trim($email)),
+            $id,
             trim($team),
+            $locale,
             $passwordHash,
             self::normalizeRoles($roles),
             true,
@@ -155,6 +162,11 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function email(): string
     {
         return $this->email;
+    }
+
+    public function hrnestEmployeeId(): ?string
+    {
+        return $this->hrnestEmployeeId;
     }
 
     public function team(): string
@@ -243,6 +255,18 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->locale = self::normalizeLocale($locale);
     }
+
+    public function pairWithHrnest(string $hrnestEmployeeId): void
+    {
+        $normalizedId = trim($hrnestEmployeeId);
+
+        if ($normalizedId === '') {
+            throw new InvalidArgumentException('HRnest employee id cannot be empty.');
+        }
+
+        $this->hrnestEmployeeId = $normalizedId;
+    }
+
 
     public function isScheduledOn(DateTimeImmutable $date): bool
     {
