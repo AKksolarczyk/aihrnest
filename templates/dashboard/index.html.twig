@@ -113,9 +113,8 @@
         }
 
         .tabs {
-            display: flex;
+            display: grid;
             gap: 12px;
-            flex-wrap: wrap;
             margin-bottom: 6px;
         }
 
@@ -165,13 +164,6 @@
             font-size: 0.78rem;
             margin-top: 8px;
             opacity: 0.9;
-        }
-
-        .hero {
-            display: grid;
-            gap: 20px;
-            grid-template-columns: 1.45fr 0.95fr;
-            align-items: stretch;
         }
 
         .eyebrow {
@@ -274,6 +266,19 @@
             margin-bottom: 4px;
         }
 
+        .dashboard-layout {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+            align-items: start;
+        }
+
+        .sidebar-column,
+        .main-column {
+            display: grid;
+            gap: 20px;
+        }
+
         .content {
             display: grid;
             gap: 20px;
@@ -311,6 +316,18 @@
             border: 1px solid rgba(47, 124, 246, 0.12);
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(239, 247, 255, 0.88) 100%);
             box-shadow: var(--shadow-soft);
+        }
+
+        .desk form {
+            margin-top: 12px;
+        }
+
+        .desk-action {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            line-height: 1.3;
         }
 
         .desk.free {
@@ -398,45 +415,39 @@
 
         .muted { color: var(--muted); }
 
-        .shell > .hero .panel:first-child {
-            background:
-                radial-gradient(circle at top right, rgba(83, 199, 255, 0.2), transparent 34%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(239, 247, 255, 0.94) 100%);
-        }
-
-        .shell > .hero .panel:last-child {
+        .sidebar-column > .panel:first-child {
             background:
                 linear-gradient(180deg, rgba(10, 24, 45, 0.9) 0%, rgba(17, 36, 71, 0.88) 100%);
             color: var(--ink-soft);
             border-color: rgba(140, 181, 255, 0.14);
         }
 
-        .shell > .hero .panel:last-child h2,
-        .shell > .hero .panel:last-child h3,
-        .shell > .hero .panel:last-child label {
+        .sidebar-column > .panel:first-child h2,
+        .sidebar-column > .panel:first-child h3,
+        .sidebar-column > .panel:first-child label {
             color: #f8fbff;
         }
 
-        .shell > .hero .panel:last-child .meta-item,
-        .shell > .hero .panel:last-child input,
-        .shell > .hero .panel:last-child select {
+        .sidebar-column > .panel:first-child .meta-item,
+        .sidebar-column > .panel:first-child input,
+        .sidebar-column > .panel:first-child select {
             background: rgba(255, 255, 255, 0.08);
             color: #f8fbff;
             border-color: rgba(140, 181, 255, 0.16);
         }
 
-        .shell > .hero .panel:last-child .muted {
+        .sidebar-column > .panel:first-child .muted {
             color: #b7cbed;
         }
 
-        .shell > .hero .panel:last-child .ghost {
+        .sidebar-column > .panel:first-child .ghost {
             background: rgba(255, 255, 255, 0.1);
             color: #f8fbff;
             border-color: rgba(140, 181, 255, 0.18);
         }
 
         @media (max-width: 1024px) {
-            .hero,
+            .dashboard-layout,
             .content,
             .week {
                 grid-template-columns: 1fr;
@@ -480,79 +491,40 @@
                 {% endfor %}
             {% endfor %}
 
-            <section class="panel">
-                <div class="eyebrow">DeskFlow / aktywny profil</div>
-                <div class="tabs" aria-label="Zakladki uzytkownikow">
-                    {% for user in users %}
-                        {% set tabStatus = null %}
-                        {% for status in userStatuses %}
-                            {% if status.id == user.id %}
-                                {% set tabStatus = status %}
-                            {% endif %}
-                        {% endfor %}
-                        <form class="tab" method="post" action="{{ path('app_active_user') }}">
-                            <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
-                            <input type="hidden" name="userId" value="{{ user.id }}">
-                            <button type="submit" class="{% if activeUser and activeUser.id == user.id %}active{% endif %}">
-                                <strong>{{ user.name }}</strong>
-                                <span>{{ user.team }}</span>
-                                <small>
-                                    {% if tabStatus and tabStatus.isOnVacation %}
-                                        Dzisiaj urlop
-                                    {% elseif tabStatus and tabStatus.deskLabel %}
-                                        Biurko dzisiaj: {{ tabStatus.deskLabel }}
-                                    {% else %}
-                                        Dzisiaj bez biurka
+            <section class="dashboard-layout">
+                <div class="sidebar-column">
+                    <aside class="panel">
+                        <div class="eyebrow">DeskFlow / uzytkownicy</div>
+                        <div class="tabs" aria-label="Zakladki uzytkownikow">
+                            {% for user in users %}
+                                {% set tabStatus = null %}
+                                {% for status in userStatuses %}
+                                    {% if status.id == user.id %}
+                                        {% set tabStatus = status %}
                                     {% endif %}
-                                </small>
-                            </button>
-                        </form>
-                    {% endfor %}
-                </div>
-            </section>
-
-            <section class="hero">
-                <article class="panel">
-                    <div class="eyebrow">Profil dnia</div>
-                    <h1>{{ activeUser.name }}</h1>
-                    <p class="muted">
-                        {% if activeUserStatus.isOnVacation %}
-                            Dzisiaj jest na urlopie i nie zajmuje biurka.
-                        {% elseif activeUserStatus.deskLabel %}
-                            Dzisiaj zajmuje biurko {{ activeUserStatus.deskLabel }}.
-                        {% else %}
-                            Dzisiaj nie ma zajetego biurka.
-                        {% endif %}
-                    </p>
-                    <p class="lead">
-                        Widok skupia sie na jednym aktywnym uzytkowniku. Widzisz jego dzisiejszy status, stale biurko,
-                        plan obecnosci i akcje, ktore mozesz wykonac bez przelaczania sie na widok calej listy osob.
-                    </p>
-
-                    <div class="chip-row">
-                        <span class="chip">Zespol: {{ activeUser.team }}</span>
-                        <span class="chip">Data operacyjna: {{ selectedDate|date('d.m.Y') }}</span>
-                        <span class="chip">Przypisane biurko: {{ activeUserStatus.assignedDeskLabel }}</span>
-                        <span class="chip">Urlop: {{ activeUserStatus.vacationDaysRemaining }}/{{ activeUserStatus.vacationDaysTotal }} dni</span>
-                    </div>
-
-                    <div class="stats">
-                        <div class="stat">
-                            <strong>{{ activeUserStatus.deskLabel ?: 'brak' }}</strong>
-                            <span>Biurko na wybrany dzien</span>
+                                {% endfor %}
+                                <form class="tab" method="post" action="{{ path('app_active_user') }}">
+                                    <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                    <input type="hidden" name="userId" value="{{ user.id }}">
+                                    <button type="submit" class="{% if activeUser and activeUser.id == user.id %}active{% endif %}">
+                                        <strong>{{ user.name }}</strong>
+                                        <span>{{ user.team }}</span>
+                                        <small>
+                                            {% if tabStatus and tabStatus.isOnVacation %}
+                                                Dzisiaj urlop
+                                            {% elseif tabStatus and tabStatus.deskLabel %}
+                                                Biurko dzisiaj: {{ tabStatus.deskLabel }}
+                                            {% else %}
+                                                Dzisiaj bez biurka
+                                            {% endif %}
+                                        </small>
+                                    </button>
+                                </form>
+                            {% endfor %}
                         </div>
-                        <div class="stat">
-                            <strong>{{ activeUserStatus.statusLabel }}</strong>
-                            <span>Status aktywnego uzytkownika</span>
-                        </div>
-                        <div class="stat">
-                            <strong>{{ availableDesks|length }}</strong>
-                            <span>Wolne biurka do przejecia</span>
-                        </div>
-                    </div>
-                </article>
+                    </aside>
 
-                <aside class="panel stack">
+                    <aside class="panel stack">
                     <div>
                         <h2>Zakladka: dzien pracy</h2>
                         <p class="muted">Zmien date albo wykonaj akcje dla aktywnego uzytkownika.</p>
@@ -588,25 +560,98 @@
                             </span>
                         </div>
                     </div>
-                </aside>
-            </section>
+                    </aside>
 
-            <section class="panel">
-                <div class="eyebrow">Zakladka: tydzien</div>
-                <h2>Perspektywa 5 dni</h2>
-                <div class="week">
-                    {% for day in weekOverview %}
-                        <div class="week-day">
-                            <strong>{{ day.date|date('D, d.m') }}</strong>
-                            <p class="muted">{{ day.occupiedCount }} zajetych / {{ day.freeCount }} wolnych</p>
-                            <span class="pill vacation">{{ day.vacationCount }} urlop</span>
-                        </div>
-                    {% endfor %}
+                    <div class="stack">
+                        <article class="panel">
+                            <div class="eyebrow">Zakladka: akcje</div>
+                            <h2>Wniosek urlopowy</h2>
+                            <form method="post" action="{{ path('app_vacation_request') }}">
+                                <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                                <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                <label>
+                                    Start urlopu
+                                    <input type="date" name="startDate" value="{{ selectedDate|date('Y-m-d') }}" required>
+                                </label>
+                                <label>
+                                    Koniec urlopu
+                                    <input type="date" name="endDate" value="{{ selectedDate|date('Y-m-d') }}" required>
+                                </label>
+                                <button type="submit">Zapisz urlop</button>
+                            </form>
+                        </article>
+
+                        <article class="panel">
+                            <div class="eyebrow">Zakladka: akcje</div>
+                            <h2>Przypisz biurko na ten dzien</h2>
+                            {% if activeUserStatus.isOnVacation %}
+                                <p class="muted">Uzytkownik jest na urlopie, dlatego nie mozna przypisac mu biurka.</p>
+                            {% elseif activeUserStatus.deskLabel %}
+                                <p class="muted">To biurko jest juz zajete przez aktywnego uzytkownika w wybranym dniu.</p>
+                                <div class="meta-item">
+                                    <strong>Aktualnie zajete biurko</strong>
+                                    <div class="muted">{{ activeUserStatus.deskLabel }} / {{ activeUserStatus.statusLabel }}</div>
+                                </div>
+                            {% else %}
+                                <p class="muted">Uzytkownik nie ma przypisanego biurka na wybrany dzien, wiec mozesz przypisac mu jedno z wolnych miejsc.</p>
+                                <form method="post" action="{{ path('app_desk_claim') }}">
+                                    <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                                    <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                    <label>
+                                        Wolne biurko
+                                        <select name="deskId" required>
+                                            {% for desk in availableDesks %}
+                                                <option value="{{ desk.id }}">{{ desk.label }} / {{ desk.roomName }}</option>
+                                            {% else %}
+                                                <option value="">Brak wolnych biurek</option>
+                                            {% endfor %}
+                                        </select>
+                                    </label>
+                                    <button type="submit" {% if availableDesks is empty %}disabled{% endif %}>Przypisz i zajmij biurko</button>
+                                </form>
+                            {% endif %}
+                        </article>
+
+                        <article class="panel">
+                            <div class="eyebrow">Zakladka: historia</div>
+                            <h2>Historia aktywnego uzytkownika</h2>
+
+                            <h3>Zaplanowane urlopy</h3>
+                            <div class="table-like">
+                                {% for vacation in vacations %}
+                                    <div class="row">
+                                        <div>
+                                            <strong>{{ vacation.userName }}</strong>
+                                            <div class="muted">Urlop zapisany</div>
+                                        </div>
+                                        <div>{{ vacation.startDate }}</div>
+                                        <div>{{ vacation.endDate }}</div>
+                                    </div>
+                                {% else %}
+                                    <p class="muted">Brak wnioskow urlopowych dla aktywnego uzytkownika.</p>
+                                {% endfor %}
+                            </div>
+
+                            <h3 style="margin-top: 20px;">Zajecia wolnych biurek</h3>
+                            <div class="table-like">
+                                {% for claim in deskClaims %}
+                                    <div class="row">
+                                        <div>
+                                            <strong>{{ claim.userName }}</strong>
+                                            <div class="muted">Przejete dodatkowe miejsce</div>
+                                        </div>
+                                        <div>{{ claim.deskLabel }}</div>
+                                        <div>{{ claim.date }}</div>
+                                    </div>
+                                {% else %}
+                                    <p class="muted">Brak dodatkowych zajec biurek dla aktywnego uzytkownika.</p>
+                                {% endfor %}
+                            </div>
+                        </article>
+                    </div>
                 </div>
-            </section>
 
-            <section class="content">
-                <div class="stack">
+                <div class="main-column">
                     <article class="panel">
                         <div class="eyebrow">Zakladka: biurka</div>
                         <h2>Plan pomieszczen</h2>
@@ -625,7 +670,18 @@
                                                     <span class="pill {{ desk.occupancy.type }}">{{ desk.occupancy.label }}</span>
                                                 {% else %}
                                                     <p>Biurko wolne</p>
-                                                    <span class="pill none">mozna zajac</span>
+                                                    {% if activeUserStatus.isOnVacation %}
+                                                        <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} jest na urlopie</button>
+                                                    {% elseif activeUserStatus.deskLabel %}
+                                                        <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} ma juz biurko</button>
+                                                    {% else %}
+                                                        <form method="post" action="{{ path('app_desk_claim') }}">
+                                                            <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                                                            <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                                            <input type="hidden" name="deskId" value="{{ desk.id }}">
+                                                            <button type="submit" class="desk-action">Zajmij jako {{ activeUser.name }}</button>
+                                                        </form>
+                                                    {% endif %}
                                                 {% endif %}
                                             </div>
                                         {% endfor %}
@@ -634,91 +690,17 @@
                             {% endfor %}
                         </div>
                     </article>
-                </div>
-
-                <div class="stack">
-                    <article class="panel">
-                        <div class="eyebrow">Zakladka: akcje</div>
-                        <h2>Wniosek urlopowy</h2>
-                        <form method="post" action="{{ path('app_vacation_request') }}">
-                            <input type="hidden" name="userId" value="{{ activeUser.id }}">
-                            <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
-                            <label>
-                                Start urlopu
-                                <input type="date" name="startDate" value="{{ selectedDate|date('Y-m-d') }}" required>
-                            </label>
-                            <label>
-                                Koniec urlopu
-                                <input type="date" name="endDate" value="{{ selectedDate|date('Y-m-d') }}" required>
-                            </label>
-                            <button type="submit">Zapisz urlop</button>
-                        </form>
-                    </article>
 
                     <article class="panel">
-                        <div class="eyebrow">Zakladka: akcje</div>
-                        <h2>Przypisz biurko na ten dzien</h2>
-                        {% if activeUserStatus.isOnVacation %}
-                            <p class="muted">Uzytkownik jest na urlopie, dlatego nie mozna przypisac mu biurka.</p>
-                        {% elseif activeUserStatus.deskLabel %}
-                            <p class="muted">To biurko jest juz zajete przez aktywnego uzytkownika w wybranym dniu.</p>
-                            <div class="meta-item">
-                                <strong>Aktualnie zajete biurko</strong>
-                                <div class="muted">{{ activeUserStatus.deskLabel }} / {{ activeUserStatus.statusLabel }}</div>
-                            </div>
-                        {% else %}
-                            <p class="muted">Uzytkownik nie ma przypisanego biurka na wybrany dzien, wiec mozesz przypisac mu jedno z wolnych miejsc.</p>
-                            <form method="post" action="{{ path('app_desk_claim') }}">
-                                <input type="hidden" name="userId" value="{{ activeUser.id }}">
-                                <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
-                                <label>
-                                    Wolne biurko
-                                    <select name="deskId" required>
-                                        {% for desk in availableDesks %}
-                                            <option value="{{ desk.id }}">{{ desk.label }} / {{ desk.roomName }}</option>
-                                        {% else %}
-                                            <option value="">Brak wolnych biurek</option>
-                                        {% endfor %}
-                                    </select>
-                                </label>
-                                <button type="submit" {% if availableDesks is empty %}disabled{% endif %}>Przypisz i zajmij biurko</button>
-                            </form>
-                        {% endif %}
-                    </article>
-
-                    <article class="panel">
-                        <div class="eyebrow">Zakladka: historia</div>
-                        <h2>Historia aktywnego uzytkownika</h2>
-
-                        <h3>Zaplanowane urlopy</h3>
-                        <div class="table-like">
-                            {% for vacation in vacations %}
-                                <div class="row">
-                                    <div>
-                                        <strong>{{ vacation.userName }}</strong>
-                                        <div class="muted">Urlop zapisany</div>
-                                    </div>
-                                    <div>{{ vacation.startDate }}</div>
-                                    <div>{{ vacation.endDate }}</div>
+                        <div class="eyebrow">Zakladka: tydzien</div>
+                        <h2>Perspektywa 5 dni</h2>
+                        <div class="week">
+                            {% for day in weekOverview %}
+                                <div class="week-day">
+                                    <strong>{{ day.date|date('D, d.m') }}</strong>
+                                    <p class="muted">{{ day.occupiedCount }} zajetych / {{ day.freeCount }} wolnych</p>
+                                    <span class="pill vacation">{{ day.vacationCount }} urlop</span>
                                 </div>
-                            {% else %}
-                                <p class="muted">Brak wnioskow urlopowych dla aktywnego uzytkownika.</p>
-                            {% endfor %}
-                        </div>
-
-                        <h3 style="margin-top: 20px;">Zajecia wolnych biurek</h3>
-                        <div class="table-like">
-                            {% for claim in deskClaims %}
-                                <div class="row">
-                                    <div>
-                                        <strong>{{ claim.userName }}</strong>
-                                        <div class="muted">Przejete dodatkowe miejsce</div>
-                                    </div>
-                                    <div>{{ claim.deskLabel }}</div>
-                                    <div>{{ claim.date }}</div>
-                                </div>
-                            {% else %}
-                                <p class="muted">Brak dodatkowych zajec biurek dla aktywnego uzytkownika.</p>
                             {% endfor %}
                         </div>
                     </article>
