@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Logowanie{% endblock %}
+{% block title %}{{ 'login.title'|trans }}{% endblock %}
 
 {% block stylesheets %}
     <style>
@@ -57,8 +57,8 @@
 
             <div class="stack">
                 <div>
-                    <h1>Zaloguj sie</h1>
-                    <p class="muted">Uzyj emaila i hasla przypisanego do konta. Logowanie jest dostepne dopiero po potwierdzeniu adresu email.</p>
+                    <h1>{{ 'login.title'|trans }}</h1>
+                    <p class="muted">{{ 'login.subtitle'|trans }}</p>
                 </div>
 
                 {% if error %}
@@ -67,27 +67,27 @@
 
                 <form method="post" data-login-form>
                     <label>
-                        Email
+                        {{ 'common.email'|trans }}
                         <input type="email" name="_username" value="{{ last_username }}" autocomplete="email" required autofocus data-login-username>
                     </label>
 
                     <label>
-                        Haslo
+                        {{ 'common.password'|trans }}
                         <input type="password" name="_password" autocomplete="current-password" required data-login-password>
                     </label>
 
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-                    <button type="submit">Zaloguj sie</button>
+                    <button type="submit">{{ 'login.submit'|trans }}</button>
                 </form>
 
-                <p class="muted">Nie masz konta? <a href="{{ path('app_register') }}">Zarejestruj sie</a></p>
+                <p class="muted">{{ 'login.no_account'|trans }} <a href="{{ path('app_register') }}">{{ 'register.link'|trans }}</a></p>
 
                 {% if app.environment == 'dev' %}
                     <div class="dev-hint">
-                        <strong>Szybkie logowanie dev</strong>
+                        <strong>{{ 'login.dev.title'|trans }}</strong>
                         <label>
-                            Konto testowe
+                            {{ 'login.dev.account'|trans }}
                             <select data-login-preset>
                                 <option value="anna.kowalska@example.com|password123">Anna Kowalska</option>
                                 <option value="piotr.nowak@example.com|password123">Piotr Nowak (admin)</option>
@@ -96,7 +96,7 @@
                                 <option value="julia.kaczmarek@example.com|password123">Julia Kaczmarek</option>
                             </select>
                         </label>
-                        <p class="muted">Po otwarciu strony pierwsze konto jest podstawione automatycznie. Mozesz od razu kliknac "Zaloguj sie".</p>
+                        <p class="muted">{{ 'login.dev.hint'|trans }}</p>
                     </div>
                 {% endif %}
             </div>

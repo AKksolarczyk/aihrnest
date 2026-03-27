@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Rejestracja{% endblock %}
+{% block title %}{{ 'register.title'|trans }}{% endblock %}
 
 {% block stylesheets %}
     <style>
@@ -59,34 +59,42 @@
 
             <div class="stack">
                 <div>
-                    <h1>Utworz konto</h1>
-                    <p class="muted">Rejestracja tworzy konto logowania. Po wyslaniu formularza dostaniesz mail z linkiem aktywacyjnym. Przypisanie biurka jest opcjonalne.</p>
+                    <h1>{{ 'register.title'|trans }}</h1>
+                    <p class="muted">{{ 'register.subtitle'|trans }}</p>
                 </div>
 
                 <form method="post">
                     <div class="grid">
                         <label>
-                            Imie i nazwisko
+                            {{ 'common.full_name'|trans }}
                             <input type="text" name="name" value="{{ values.name }}" required>
                         </label>
                         <label>
-                            Zespol
+                            {{ 'common.team'|trans }}
                             <input type="text" name="team" value="{{ values.team }}" required>
                         </label>
                         <label>
-                            Email
+                            {{ 'common.email'|trans }}
                             <input type="email" name="email" value="{{ values.email }}" required>
                         </label>
                         <label>
-                            Haslo
+                            {{ 'common.password'|trans }}
                             <input type="password" name="password" required minlength="8">
+                        </label>
+                        <label>
+                            {{ 'common.language'|trans }}
+                            <select name="locale" required>
+                                {% for locale in languageOptions %}
+                                    <option value="{{ locale }}" {% if values.locale == locale %}selected{% endif %}>{{ ('language.option.' ~ locale)|trans }}</option>
+                                {% endfor %}
+                            </select>
                         </label>
                     </div>
 
                     <label>
-                        Przypisane biurko
+                        {{ 'register.assigned_desk.label'|trans }}
                         <select name="assignedDeskId">
-                            <option value="">Brak przypisanego biurka</option>
+                            <option value="">{{ 'register.assigned_desk.none'|trans }}</option>
                             {% for deskId, desk in deskOptions %}
                                 <option value="{{ deskId }}" {% if values.assignedDeskId == deskId %}selected{% endif %}>{{ desk.label }} / {{ desk.roomName }}</option>
                             {% endfor %}
@@ -94,21 +102,21 @@
                     </label>
 
                     <div>
-                        <h2>Harmonogram dni biurowych</h2>
+                        <h2>{{ 'register.schedule.title'|trans }}</h2>
                         <div class="days">
-                            {% for key, label in {monday: 'Poniedzialek', tuesday: 'Wtorek', wednesday: 'Sroda', thursday: 'Czwartek', friday: 'Piatek'} %}
+                            {% for key in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] %}
                                 <label class="checkbox">
                                     <input type="checkbox" name="schedule[]" value="{{ key }}" {% if key in values.schedule %}checked{% endif %}>
-                                    <span>{{ label }}</span>
+                                    <span>{{ ('weekday.long.' ~ key)|trans }}</span>
                                 </label>
                             {% endfor %}
                         </div>
                     </div>
 
-                    <button type="submit">Zarejestruj konto</button>
+                    <button type="submit">{{ 'register.submit'|trans }}</button>
                 </form>
 
-                <p class="muted">Masz juz konto? <a href="{{ path('app_login') }}">Przejdz do logowania</a></p>
+                <p class="muted">{{ 'register.has_account'|trans }} <a href="{{ path('app_login') }}">{{ 'login.link'|trans }}</a></p>
             </div>
         </div>
     </div>

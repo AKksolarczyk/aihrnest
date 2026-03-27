@@ -4,7 +4,7 @@ Użytkownik może wnioskować o urlop i gdy ustawi urlop, to jego biurko dostaje
 Użytkownik, który w danym dniu nie ma zajętego żadnego biurka, może zająć wolne biurko.
 Powinny gdzieś istnieć ustawienia jaka jest konfiguracja biurek w 3 pomieszczeniach.
 
-Układ biurek:
+≥ćUkład biurek:
 Pomieszczenie 1:
 X X   X X
 X X   X X

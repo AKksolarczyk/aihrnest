@@ -21,6 +21,7 @@ use App\Workspace\Domain\Repository\VacationRepositoryInterface;
 use App\Workspace\Domain\Service\DailyPlan;
 use App\Workspace\Domain\Service\WorkspacePlanner;
 use DateInterval;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class GetDashboardHandler
 {
@@ -33,6 +34,7 @@ final class GetDashboardHandler
         private readonly IssueReportRepositoryInterface $issueReportRepository,
         private readonly OfficeLayoutRepositoryInterface $officeLayoutRepository,
         private readonly WorkspacePlanner $workspacePlanner,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -114,7 +116,7 @@ final class GetDashboardHandler
                 'name' => $user->name(),
                 'role' => $this->resolveUserRole($user),
                 'team' => $user->team(),
-                'assignedDeskLabel' => $user->assignedDeskId() ? ($deskMap[$user->assignedDeskId()]['label'] ?? $user->assignedDeskId()) : 'brak',
+                'assignedDeskLabel' => $user->assignedDeskId() ? ($deskMap[$user->assignedDeskId()]['label'] ?? $user->assignedDeskId()) : $this->translator->trans('common.none'),
                 'schedule' => $user->schedule(),
                 'vacationDaysTotal' => $user->vacationDaysTotal(),
                 'vacationDaysRemaining' => $user->vacationDaysRemaining(),
@@ -123,11 +125,11 @@ final class GetDashboardHandler
                 'deskLabel' => $deskId ? ($deskMap[$deskId]['label'] ?? $deskId) : null,
                 'occupancyType' => $deskId !== null ? ($dailyPlan->occupancy()[$deskId]['type'] ?? null) : null,
                 'statusLabel' => match (true) {
-                    $isOnVacation => 'Urlop',
-                    $deskId !== null && $user->assignedDeskId() !== null && $deskId === $user->assignedDeskId() => 'Pracuje z przypisanego biurka',
-                    $deskId !== null => 'Zajal wolne biurko',
-                    $isScheduled && !$user->hasAssignedDesk() => 'Brak przypisanego biurka',
-                    default => 'Bez biurka w tym dniu',
+                    $isOnVacation => $this->translator->trans('dashboard.status.vacation'),
+                    $deskId !== null && $user->assignedDeskId() !== null && $deskId === $user->assignedDeskId() => $this->translator->trans('dashboard.status.assigned_desk'),
+                    $deskId !== null => $this->translator->trans('dashboard.status.claimed_desk'),
+                    $isScheduled && !$user->hasAssignedDesk() => $this->translator->trans('dashboard.status.no_assigned_desk'),
+                    default => $this->translator->trans('dashboard.status.no_desk'),
                 },
             ];
         }
@@ -174,11 +176,15 @@ final class GetDashboardHandler
                 $desks[] = [
                     'id' => $desk->id(),
                     'label' => $deskMap[$desk->id()]['label'] ?? $desk->id(),
-                    'occupancy' => $occupancy,
-                    'isFree' => $occupancy === null,
-                    'position' => $position,
-                ];
+                'occupancy' => $occupancy,
+                'isFree' => $occupancy === null,
+                'position' => $position,
+            ];
+
+            if ($occupancy !== null) {
+                $desks[array_key_last($desks)]['occupancy']['label'] = $this->translateOccupancyLabel((string) $occupancy['type']);
             }
+        }
 
             $view[] = [
                 'id' => $room->id(),
@@ -399,7 +405,7 @@ final class GetDashboardHandler
             $people[] = [
                 'name' => (string) $status['name'],
                 'team' => (string) $status['team'],
-                'deskLabel' => (string) ($status['deskLabel'] ?? 'brak biurka'),
+                'deskLabel' => (string) ($status['deskLabel'] ?? $this->translator->trans('dashboard.people.no_desk')),
                 'statusLabel' => (string) $status['statusLabel'],
             ];
         }
@@ -486,7 +492,7 @@ final class GetDashboardHandler
 
         foreach (array_slice($counters, 0, 5, true) as $label => $count) {
             $items[] = [
-                'label' => $label,
+                'label' => $this->translateIssueCategory($label),
                 'count' => $count,
             ];
         }
@@ -510,6 +516,20 @@ final class GetDashboardHandler
     private function resolveUserRole(User $user): string
     {
         return in_array('ROLE_ADMIN', $user->getRoles(), true) ? 'admin' : 'user';
+    }
+
+    private function translateOccupancyLabel(string $type): string
+    {
+        return match ($type) {
+            'schedule' => $this->translator->trans('dashboard.occupancy.schedule'),
+            'claim' => $this->translator->trans('dashboard.occupancy.claim'),
+            default => $type,
+        };
+    }
+
+    private function translateIssueCategory(string $category): string
+    {
+        return $this->translator->trans(sprintf('dashboard.issue_category.%s', $category));
     }
 
     /**

@@ -908,19 +908,19 @@
     <div class="page">
         <div class="shell">
             {% if app.user %}
-                <section class="topbar" aria-label="Zalogowany uzytkownik">
+                <section class="topbar" aria-label="{{ 'dashboard.topbar.aria'|trans }}">
                     <div class="topbar-user">
-                        <span class="topbar-label">Zalogowano jako</span>
+                        <span class="topbar-label">{{ 'dashboard.topbar.logged_as'|trans }}</span>
                         <strong>{{ app.user.name }}</strong>
                     </div>
                     <div class="topbar-actions">
                         <div class="topbar-meta">
                             <span class="chip">{{ app.user.email }}</span>
                             {% if app.user.team %}
-                                <span class="chip">Zespol: {{ app.user.team }}</span>
+                                <span class="chip">{{ 'dashboard.topbar.team'|trans }}: {{ app.user.team }}</span>
                             {% endif %}
                         </div>
-                        <a class="topbar-link ghost" href="{{ path('app_logout') }}">Wyloguj</a>
+                        <a class="topbar-link ghost" href="{{ path('app_logout') }}">{{ 'dashboard.topbar.logout'|trans }}</a>
                     </div>
                 </section>
             {% endif %}
@@ -935,47 +935,47 @@
                 <div class="sidebar-column">
                     <aside class="panel stack">
                     <div>
-                        <div class="eyebrow">DeskFlow / dzien pracy</div>
-                        <h2>Dzien pracy</h2>
+                        <div class="eyebrow">{{ 'dashboard.sidebar.day.eyebrow'|trans }}</div>
+                        <h2>{{ 'dashboard.sidebar.day.title'|trans }}</h2>
                     </div>
 
                     <form method="get" action="{{ path('app_dashboard') }}">
                         <label>
-                            Dzien roboczy
+                            {{ 'dashboard.sidebar.day.label'|trans }}
                             <input type="date" name="date" value="{{ selectedDate|date('Y-m-d') }}" onchange="this.form.submit()">
                         </label>
                     </form>
 
                     <div class="meta-list">
                         <div class="meta-item">
-                            <strong>Aktywny uzytkownik</strong>
+                            <strong>{{ 'dashboard.sidebar.active_user'|trans }}</strong>
                             <div class="muted">{{ activeUser.name }}{% if activeUser.team %} / {{ activeUser.team }}{% endif %}</div>
-                            <div class="muted">Rola: {{ activeUser.role == 'admin' ? 'Admin' : 'User' }}</div>
+                            <div class="muted">{{ 'dashboard.common.role'|trans }}: {{ ('dashboard.role.' ~ activeUser.role)|trans }}</div>
                         </div>
                     </div>
                     </aside>
 
                     <aside class="panel">
-                        <div class="eyebrow">DeskFlow / uzytkownicy</div>
+                        <div class="eyebrow">{{ 'dashboard.sidebar.users.eyebrow'|trans }}</div>
                         <div class="user-search">
                             <label for="user-search-input">
-                                Wyszukaj uzytkownika
+                                {{ 'dashboard.sidebar.users.search'|trans }}
                                 <input
                                     id="user-search-input"
                                     type="search"
-                                    placeholder="Imie, zespol, rola lub status"
+                                    placeholder="{{ 'dashboard.sidebar.users.search_placeholder'|trans }}"
                                     autocomplete="off"
                                     data-user-search-input
                                 >
                             </label>
                             <div class="user-search-meta">
-                                <span data-user-search-count>{{ users|length }} z {{ users|length }} uzytkownikow</span>
+                                <span data-user-search-count>{{ 'dashboard.sidebar.users.count'|trans({'%visible%': users|length, '%total%': users|length}) }}</span>
                             </div>
                         </div>
                         <div class="user-search-empty" data-user-search-empty>
-                            Brak uzytkownikow pasujacych do wyszukiwania.
+                            {{ 'dashboard.sidebar.users.empty'|trans }}
                         </div>
-                        <div class="tabs" aria-label="Zakladki uzytkownikow" data-user-search-list>
+                        <div class="tabs" aria-label="{{ 'dashboard.sidebar.users.tabs_aria'|trans }}" data-user-search-list>
                             {% for user in users %}
                                 {% set tabStatus = null %}
                                 {% for status in userStatuses %}
@@ -984,8 +984,8 @@
                                     {% endif %}
                                 {% endfor %}
                                 {% set statusText = tabStatus and tabStatus.isOnVacation
-                                    ? 'Dzisiaj urlop'
-                                    : (tabStatus and tabStatus.deskLabel ? 'Biurko dzisiaj: ' ~ tabStatus.deskLabel : 'Dzisiaj bez biurka')
+                                    ? 'dashboard.sidebar.users.status.vacation'|trans
+                                    : (tabStatus and tabStatus.deskLabel ? 'dashboard.sidebar.users.status.desk_today'|trans({'%desk%': tabStatus.deskLabel}) : 'dashboard.sidebar.users.status.no_desk_today'|trans)
                                 %}
                                 <form
                                     class="tab"
@@ -999,7 +999,7 @@
                                     <button type="submit" class="{% if activeUser and activeUser.id == user.id %}active{% endif %}">
                                         <strong>{{ user.name }}</strong>
                                         <span>{{ user.team }}</span>
-                                        <span>Rola: {{ user.role == 'admin' ? 'Admin' : 'User' }}</span>
+                                        <span>{{ 'dashboard.common.role'|trans }}: {{ ('dashboard.role.' ~ user.role)|trans }}</span>
                                         <small>
                                             {{ statusText }}
                                         </small>
@@ -1011,69 +1011,69 @@
 
                     <div class="stack">
                         <article class="panel">
-                            <div class="eyebrow">Zakladka: akcje</div>
-                            <h2>Wniosek urlopowy</h2>
+                            <div class="eyebrow">{{ 'dashboard.section.actions'|trans }}</div>
+                            <h2>{{ 'dashboard.vacation.title'|trans }}</h2>
                             <form method="post" action="{{ path('app_vacation_request') }}">
                                 <input type="hidden" name="userId" value="{{ activeUser.id }}">
                                 <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
                                 <label>
-                                    Start urlopu
+                                    {{ 'dashboard.vacation.start'|trans }}
                                     <input type="date" name="startDate" value="{{ selectedDate|date('Y-m-d') }}" required>
                                 </label>
                                 <label>
-                                    Koniec urlopu
+                                    {{ 'dashboard.vacation.end'|trans }}
                                     <input type="date" name="endDate" value="{{ selectedDate|date('Y-m-d') }}" required>
                                 </label>
-                                <button type="submit">Zapisz urlop</button>
+                                <button type="submit">{{ 'dashboard.vacation.submit'|trans }}</button>
                             </form>
                         </article>
 
                         <article class="panel">
-                            <div class="eyebrow">Zakladka: akcje</div>
-                            <h2>Przypisz biurko na ten dzien</h2>
+                            <div class="eyebrow">{{ 'dashboard.section.actions'|trans }}</div>
+                            <h2>{{ 'dashboard.claim.title'|trans }}</h2>
                             {% if activeUserStatus.isOnVacation %}
-                                <p class="muted">Uzytkownik jest na urlopie, dlatego nie mozna przypisac mu biurka.</p>
+                                <p class="muted">{{ 'dashboard.claim.on_vacation'|trans }}</p>
                             {% elseif activeUserStatus.deskLabel %}
-                                <p class="muted">To biurko jest juz zajete przez aktywnego uzytkownika w wybranym dniu.</p>
+                                <p class="muted">{{ 'dashboard.claim.already_has_desk'|trans }}</p>
                                 <div class="meta-item">
-                                    <strong>Aktualnie zajete biurko</strong>
+                                    <strong>{{ 'dashboard.claim.current'|trans }}</strong>
                                     <div class="muted">{{ activeUserStatus.deskLabel }} / {{ activeUserStatus.statusLabel }}</div>
                                 </div>
                                 {% if activeUserStatus.occupancyType == 'claim' %}
                                     <form method="post" action="{{ path('app_desk_claim_release') }}">
                                         <input type="hidden" name="userId" value="{{ activeUser.id }}">
                                         <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
-                                        <button type="submit" class="ghost">Zwolnij biurko</button>
+                                        <button type="submit" class="ghost">{{ 'dashboard.claim.release'|trans }}</button>
                                     </form>
                                 {% endif %}
                             {% else %}
-                                <p class="muted">Uzytkownik nie ma przypisanego biurka na wybrany dzien, wiec mozesz przypisac mu jedno z wolnych miejsc.</p>
+                                <p class="muted">{{ 'dashboard.claim.help'|trans }}</p>
                                 <form method="post" action="{{ path('app_desk_claim') }}">
                                     <input type="hidden" name="userId" value="{{ activeUser.id }}">
                                     <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
                                     <label>
-                                        Wolne biurko
+                                        {{ 'dashboard.claim.available_desk'|trans }}
                                         <select name="deskId" required>
                                             {% for desk in availableDesks %}
                                                 <option value="{{ desk.id }}">{{ desk.label }} / {{ desk.roomName }}</option>
                                             {% else %}
-                                                <option value="">Brak wolnych biurek</option>
+                                                <option value="">{{ 'dashboard.claim.no_free_desks'|trans }}</option>
                                             {% endfor %}
                                         </select>
                                     </label>
-                                    <button type="submit" {% if availableDesks is empty %}disabled{% endif %}>Przypisz i zajmij biurko</button>
+                                    <button type="submit" {% if availableDesks is empty %}disabled{% endif %}>{{ 'dashboard.claim.submit'|trans }}</button>
                                 </form>
                             {% endif %}
                         </article>
 
                         <article class="panel">
-                            <div class="eyebrow">Zakladka: akcje</div>
-                            <h2>Rezerwacja cykliczna</h2>
+                            <div class="eyebrow">{{ 'dashboard.section.actions'|trans }}</div>
+                            <h2>{{ 'dashboard.recurring.title'|trans }}</h2>
                             <form method="post" action="{{ path('app_recurring_desk_claim_create') }}">
                                 <input type="hidden" name="userId" value="{{ activeUser.id }}">
                                 <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
                                 <label>
-                                    Biurko
+                                    {{ 'dashboard.common.desk'|trans }}
                                     <select name="deskId" required>
                                         {% for desk in deskCatalog %}
                                             <option value="{{ desk.id }}">{{ desk.label }} / {{ desk.roomName }}</option>
@@ -1081,104 +1081,104 @@
                                     </select>
                                 </label>
                                 <div class="day-picker">
-                                    <strong>Dni tygodnia</strong>
-                                    {% for key, label in {monday: 'Pon', tuesday: 'Wt', wednesday: 'Sro', thursday: 'Czw', friday: 'Pt'} %}
+                                    <strong>{{ 'dashboard.recurring.weekdays'|trans }}</strong>
+                                    {% for key in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] %}
                                         <label class="checkbox">
                                             <input type="checkbox" name="weekdays[]" value="{{ key }}" {% if key in activeUserStatus.schedule %}checked{% endif %}>
-                                            <span>{{ label }}</span>
+                                            <span>{{ ('weekday.short.' ~ key)|trans }}</span>
                                         </label>
                                     {% endfor %}
                                 </div>
                                 <label>
-                                    Od
+                                    {{ 'common.from'|trans }}
                                     <input type="date" name="startDate" value="{{ selectedDate|date('Y-m-d') }}" required>
                                 </label>
                                 <label>
-                                    Do
+                                    {{ 'common.to'|trans }}
                                     <input type="date" name="endDate" value="{{ selectedDate|date('Y-m-d') }}" required>
                                 </label>
-                                <button type="submit">Utworz rezerwacje cykliczna</button>
+                                <button type="submit">{{ 'dashboard.recurring.submit'|trans }}</button>
                             </form>
                         </article>
 
                         <article class="panel">
-                            <div class="eyebrow">Zakladka: akcje</div>
-                            <h2>Zglos problem</h2>
+                            <div class="eyebrow">{{ 'dashboard.section.actions'|trans }}</div>
+                            <h2>{{ 'dashboard.issue.title'|trans }}</h2>
                             <form method="post" action="{{ path('app_issue_report_create') }}">
                                 <input type="hidden" name="userId" value="{{ activeUser.id }}">
                                 <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
                                 <label>
-                                    Kategoria
+                                    {{ 'dashboard.issue.category'|trans }}
                                     <select name="category" required>
-                                        <option value="sprzet">Sprzet</option>
-                                        <option value="komfort">Komfort</option>
-                                        <option value="siec">Siec</option>
-                                        <option value="inne">Inne</option>
+                                        <option value="sprzet">{{ 'dashboard.issue_category.sprzet'|trans }}</option>
+                                        <option value="komfort">{{ 'dashboard.issue_category.komfort'|trans }}</option>
+                                        <option value="siec">{{ 'dashboard.issue_category.siec'|trans }}</option>
+                                        <option value="inne">{{ 'dashboard.issue_category.inne'|trans }}</option>
                                     </select>
                                 </label>
                                 <label>
-                                    Biurko
+                                    {{ 'dashboard.common.desk'|trans }}
                                     <select name="deskId">
-                                        <option value="">Brak</option>
+                                        <option value="">{{ 'common.none'|trans }}</option>
                                         {% for desk in deskCatalog %}
                                             <option value="{{ desk.id }}">{{ desk.label }} / {{ desk.roomName }}</option>
                                         {% endfor %}
                                     </select>
                                 </label>
                                 <label>
-                                    Pomieszczenie
+                                    {{ 'dashboard.issue.room'|trans }}
                                     <select name="roomId">
-                                        <option value="">Brak</option>
+                                        <option value="">{{ 'common.none'|trans }}</option>
                                         {% for room in roomCatalog %}
                                             <option value="{{ room.id }}">{{ room.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </label>
                                 <label>
-                                    Opis
+                                    {{ 'dashboard.issue.description'|trans }}
                                     <input type="text" name="description" maxlength="255" required>
                                 </label>
-                                <button type="submit">Wyslij zgloszenie</button>
+                                <button type="submit">{{ 'dashboard.issue.submit'|trans }}</button>
                             </form>
                         </article>
 
                         <article class="panel">
-                            <div class="eyebrow">Zakladka: historia</div>
-                            <h2>Historia aktywnego uzytkownika</h2>
+                            <div class="eyebrow">{{ 'dashboard.section.history'|trans }}</div>
+                            <h2>{{ 'dashboard.history.title'|trans }}</h2>
 
-                            <h3>Zaplanowane urlopy</h3>
+                            <h3>{{ 'dashboard.history.vacations'|trans }}</h3>
                             <div class="table-like">
                                 {% for vacation in vacations %}
                                     <div class="row">
                                         <div>
                                             <strong>{{ vacation.userName }}</strong>
-                                            <div class="muted">Urlop zapisany</div>
+                                            <div class="muted">{{ 'dashboard.history.vacation_saved'|trans }}</div>
                                         </div>
                                         <div>{{ vacation.startDate }}</div>
                                         <div>{{ vacation.endDate }}</div>
                                     </div>
                                 {% else %}
-                                    <p class="muted">Brak wnioskow urlopowych dla aktywnego uzytkownika.</p>
+                                    <p class="muted">{{ 'dashboard.history.vacations_empty'|trans }}</p>
                                 {% endfor %}
                             </div>
 
-                            <h3 style="margin-top: 20px;">Zajecia wolnych biurek</h3>
+                            <h3 style="margin-top: 20px;">{{ 'dashboard.history.claims'|trans }}</h3>
                             <div class="table-like">
                                 {% for claim in deskClaims %}
                                     <div class="row">
                                         <div>
                                             <strong>{{ claim.userName }}</strong>
-                                            <div class="muted">Przejete dodatkowe miejsce</div>
+                                            <div class="muted">{{ 'dashboard.history.claim_saved'|trans }}</div>
                                         </div>
                                         <div>{{ claim.deskLabel }}</div>
                                         <div>{{ claim.date }}</div>
                                     </div>
                                 {% else %}
-                                    <p class="muted">Brak dodatkowych zajec biurek dla aktywnego uzytkownika.</p>
+                                    <p class="muted">{{ 'dashboard.history.claims_empty'|trans }}</p>
                                 {% endfor %}
                             </div>
 
-                            <h3 style="margin-top: 20px;">Waitlista</h3>
+                            <h3 style="margin-top: 20px;">{{ 'dashboard.history.waitlist'|trans }}</h3>
                             <div class="table-like">
                                 {% for entry in deskWaitlist %}
                                     <div class="row">
@@ -1187,42 +1187,42 @@
                                             <div class="muted">{{ entry.roomName }}</div>
                                         </div>
                                         <div>{{ entry.date }}</div>
-                                        <div>{{ entry.status }}</div>
+                                        <div>{{ ('dashboard.waitlist_status.' ~ entry.status)|trans }}</div>
                                     </div>
                                 {% else %}
-                                    <p class="muted">Brak wpisow na waitliscie.</p>
+                                    <p class="muted">{{ 'dashboard.history.waitlist_empty'|trans }}</p>
                                 {% endfor %}
                             </div>
 
-                            <h3 style="margin-top: 20px;">Rezerwacje cykliczne</h3>
+                            <h3 style="margin-top: 20px;">{{ 'dashboard.history.recurring'|trans }}</h3>
                             <div class="table-like">
                                 {% for reservation in recurringReservations %}
                                     <div class="row">
                                         <div>
                                             <strong>{{ reservation.deskLabel }}</strong>
-                                            <div class="muted">{{ reservation.roomName }} / {{ reservation.weekdays|join(', ') }}</div>
+                                            <div class="muted">{{ reservation.roomName }} / {{ reservation.weekdays|map(day => ('weekday.short.' ~ day)|trans)|join(', ') }}</div>
                                         </div>
                                         <div>{{ reservation.startDate }}</div>
                                         <div>{{ reservation.endDate }}</div>
                                     </div>
                                 {% else %}
-                                    <p class="muted">Brak rezerwacji cyklicznych.</p>
+                                    <p class="muted">{{ 'dashboard.history.recurring_empty'|trans }}</p>
                                 {% endfor %}
                             </div>
 
-                            <h3 style="margin-top: 20px;">Zgloszone problemy</h3>
+                            <h3 style="margin-top: 20px;">{{ 'dashboard.history.issues'|trans }}</h3>
                             <div class="table-like">
                                 {% for issue in issueReports %}
                                     <div class="row">
                                         <div>
-                                            <strong>{{ issue.category }}</strong>
+                                            <strong>{{ ('dashboard.issue_category.' ~ issue.category)|trans }}</strong>
                                             <div class="muted">{{ issue.target }}</div>
                                         </div>
-                                        <div>{{ issue.status }}</div>
+                                        <div>{{ ('dashboard.issue_status.' ~ issue.status)|trans }}</div>
                                         <div>{{ issue.reportedAt }}</div>
                                     </div>
                                 {% else %}
-                                    <p class="muted">Brak zgloszen problemow.</p>
+                                    <p class="muted">{{ 'dashboard.history.issues_empty'|trans }}</p>
                                 {% endfor %}
                             </div>
                         </article>
@@ -1230,23 +1230,23 @@
                 </div>
 
                 <div class="main-column">
-                    <div class="content-tabs" aria-label="Glowne zakladki widoku">
-                        <button type="button" class="content-tab-button active" data-content-tab-target="desks">Biurka</button>
-                        <button type="button" class="content-tab-button" data-content-tab-target="week">Tydzien</button>
-                        <button type="button" class="content-tab-button" data-content-tab-target="people">People finder</button>
+                    <div class="content-tabs" aria-label="{{ 'dashboard.tabs.aria'|trans }}">
+                        <button type="button" class="content-tab-button active" data-content-tab-target="desks">{{ 'dashboard.tabs.desks'|trans }}</button>
+                        <button type="button" class="content-tab-button" data-content-tab-target="week">{{ 'dashboard.tabs.week'|trans }}</button>
+                        <button type="button" class="content-tab-button" data-content-tab-target="people">{{ 'dashboard.tabs.people'|trans }}</button>
                         {% if is_granted('ROLE_ADMIN') %}
-                            <button type="button" class="content-tab-button" data-content-tab-target="admin-desks">Edycja biurek</button>
-                            <button type="button" class="content-tab-button" data-content-tab-target="admin-reports">Raporty</button>
+                            <button type="button" class="content-tab-button" data-content-tab-target="admin-desks">{{ 'dashboard.tabs.admin_desks'|trans }}</button>
+                            <button type="button" class="content-tab-button" data-content-tab-target="admin-reports">{{ 'dashboard.tabs.admin_reports'|trans }}</button>
                         {% endif %}
                     </div>
 
                     <div class="content-tab-panel active" data-content-tab="desks">
                         <article class="panel">
-                            <div class="eyebrow">Zakladka: biurka</div>
-                            <h2>Plan pomieszczen</h2>
-                            <div class="desk-view-toggle" aria-label="Przelacz widok biurek">
-                                <button type="button" class="desk-view-button active" data-desk-view-target="cards">Widok kart</button>
-                                <button type="button" class="desk-view-button" data-desk-view-target="map">Mapa 2D</button>
+                            <div class="eyebrow">{{ 'dashboard.desks.eyebrow'|trans }}</div>
+                            <h2>{{ 'dashboard.desks.title'|trans }}</h2>
+                            <div class="desk-view-toggle" aria-label="{{ 'dashboard.desks.view_toggle'|trans }}">
+                                <button type="button" class="desk-view-button active" data-desk-view-target="cards">{{ 'dashboard.desks.cards'|trans }}</button>
+                                <button type="button" class="desk-view-button" data-desk-view-target="map">{{ 'dashboard.desks.map'|trans }}</button>
                             </div>
 
                             <div class="room-views">
@@ -1269,21 +1269,21 @@
                                                                         <input type="hidden" name="userId" value="{{ activeUser.id }}">
                                                                         <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
                                                                         <input type="hidden" name="deskId" value="{{ desk.id }}">
-                                                                        <button type="submit" class="desk-action ghost">Dolacz do waitlisty</button>
+                                                                        <button type="submit" class="desk-action ghost">{{ 'dashboard.desks.join_waitlist'|trans }}</button>
                                                                     </form>
                                                                 {% endif %}
                                                             {% else %}
-                                                                <p>Biurko wolne</p>
+                                                                <p>{{ 'dashboard.desks.free'|trans }}</p>
                                                                 {% if activeUserStatus.isOnVacation %}
-                                                                    <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} jest na urlopie</button>
+                                                                    <button type="button" class="desk-action ghost" disabled>{{ 'dashboard.desks.user_on_vacation'|trans({'%name%': activeUser.name}) }}</button>
                                                                 {% elseif activeUserStatus.deskLabel %}
-                                                                    <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} ma juz biurko</button>
+                                                                    <button type="button" class="desk-action ghost" disabled>{{ 'dashboard.desks.user_has_desk'|trans({'%name%': activeUser.name}) }}</button>
                                                                 {% else %}
                                                                     <form method="post" action="{{ path('app_desk_claim') }}">
                                                                         <input type="hidden" name="userId" value="{{ activeUser.id }}">
                                                                         <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
                                                                         <input type="hidden" name="deskId" value="{{ desk.id }}">
-                                                                        <button type="submit" class="desk-action">Zajmij jako {{ activeUser.name }}</button>
+                                                                        <button type="submit" class="desk-action">{{ 'dashboard.desks.claim_as'|trans({'%name%': activeUser.name}) }}</button>
                                                                     </form>
                                                                 {% endif %}
                                                             {% endif %}
@@ -1322,21 +1322,21 @@
                                                                                 <input type="hidden" name="userId" value="{{ activeUser.id }}">
                                                                                 <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
                                                                                 <input type="hidden" name="deskId" value="{{ desk.id }}">
-                                                                                <button type="submit" class="desk-action ghost">Dolacz do waitlisty</button>
+                                                                                <button type="submit" class="desk-action ghost">{{ 'dashboard.desks.join_waitlist'|trans }}</button>
                                                                             </form>
                                                                         {% endif %}
                                                                     {% else %}
-                                                                        <p>Biurko wolne</p>
+                                                                        <p>{{ 'dashboard.desks.free'|trans }}</p>
                                                                         {% if activeUserStatus.isOnVacation %}
-                                                                            <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} jest na urlopie</button>
+                                                                            <button type="button" class="desk-action ghost" disabled>{{ 'dashboard.desks.user_on_vacation'|trans({'%name%': activeUser.name}) }}</button>
                                                                         {% elseif activeUserStatus.deskLabel %}
-                                                                            <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} ma juz biurko</button>
+                                                                            <button type="button" class="desk-action ghost" disabled>{{ 'dashboard.desks.user_has_desk'|trans({'%name%': activeUser.name}) }}</button>
                                                                         {% else %}
                                                                             <form method="post" action="{{ path('app_desk_claim') }}">
                                                                                 <input type="hidden" name="userId" value="{{ activeUser.id }}">
                                                                                 <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
                                                                                 <input type="hidden" name="deskId" value="{{ desk.id }}">
-                                                                                <button type="submit" class="desk-action">Zajmij jako {{ activeUser.name }}</button>
+                                                                                <button type="submit" class="desk-action">{{ 'dashboard.desks.claim_as'|trans({'%name%': activeUser.name}) }}</button>
                                                                             </form>
                                                                         {% endif %}
                                                                     {% endif %}
@@ -1345,8 +1345,8 @@
                                                         {% endfor %}
                                                     </div>
                                                     <div class="map-legend" aria-hidden="true">
-                                                        <span><i class="map-dot free"></i> Wolne biurko</span>
-                                                        <span><i class="map-dot busy"></i> Zajete biurko</span>
+                                                        <span><i class="map-dot free"></i> {{ 'dashboard.desks.legend.free'|trans }}</span>
+                                                        <span><i class="map-dot busy"></i> {{ 'dashboard.desks.legend.busy'|trans }}</span>
                                                     </div>
                                                 </div>
                                             </article>
@@ -1359,14 +1359,14 @@
 
                     <div class="content-tab-panel" data-content-tab="week">
                         <article class="panel">
-                            <div class="eyebrow">Zakladka: tydzien</div>
-                            <h2>Perspektywa 5 dni</h2>
+                            <div class="eyebrow">{{ 'dashboard.week.eyebrow'|trans }}</div>
+                            <h2>{{ 'dashboard.week.title'|trans }}</h2>
                             <div class="week">
                                 {% for day in weekOverview %}
                                     <div class="week-day">
                                         <strong>{{ day.date|date('D, d.m') }}</strong>
-                                        <p class="muted">{{ day.occupiedCount }} zajetych / {{ day.freeCount }} wolnych</p>
-                                        <span class="pill vacation">{{ day.vacationCount }} urlop</span>
+                                        <p class="muted">{{ 'dashboard.week.summary'|trans({'%occupied%': day.occupiedCount, '%free%': day.freeCount}) }}</p>
+                                        <span class="pill vacation">{{ 'dashboard.week.vacation'|trans({'%count%': day.vacationCount}) }}</span>
                                     </div>
                                 {% endfor %}
                             </div>
@@ -1375,12 +1375,12 @@
 
                     <div class="content-tab-panel" data-content-tab="people">
                         <article class="panel">
-                            <div class="eyebrow">Zakladka: people finder</div>
-                            <h2>Kto jest dzis w biurze</h2>
+                            <div class="eyebrow">{{ 'dashboard.people.eyebrow'|trans }}</div>
+                            <h2>{{ 'dashboard.people.title'|trans }}</h2>
                             <div class="finder-search">
                                 <label>
-                                    Szukaj po osobie, zespole albo biurku
-                                    <input type="search" placeholder="Np. Anna, Product, A-01" data-people-search-input>
+                                    {{ 'dashboard.people.search'|trans }}
+                                    <input type="search" placeholder="{{ 'dashboard.people.placeholder'|trans }}" data-people-search-input>
                                 </label>
                             </div>
                             <div class="people-list">
@@ -1392,7 +1392,7 @@
                                         <span class="pill none">{{ person.statusLabel }}</span>
                                     </div>
                                 {% else %}
-                                    <p class="muted">Brak osob obecnych w biurze dla wybranego dnia.</p>
+                                    <p class="muted">{{ 'dashboard.people.empty'|trans }}</p>
                                 {% endfor %}
                             </div>
                         </article>
@@ -1401,9 +1401,9 @@
                     {% if is_granted('ROLE_ADMIN') %}
                         <div class="content-tab-panel" data-content-tab="admin-desks">
                             <article class="panel">
-                                <div class="eyebrow">Admin / biurka</div>
-                                <h2>Modyfikowanie nazw biurek</h2>
-                                <p class="lead">Ten widok jest dostepny tylko dla administratora i pozwala zmieniac nazwy wyswietlane w planie pomieszczen oraz przy rezerwacjach. Mozesz wpisac kilka zmian naraz i zapisac je jednym przyciskiem albo klawiszem Enter.</p>
+                                <div class="eyebrow">{{ 'dashboard.admin_desks.eyebrow'|trans }}</div>
+                                <h2>{{ 'dashboard.admin_desks.title'|trans }}</h2>
+                                <p class="lead">{{ 'dashboard.admin_desks.lead'|trans }}</p>
 
                                 <form method="post" action="{{ path('app_admin_desk_label_update') }}">
                                     <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
@@ -1419,7 +1419,7 @@
                                                         <span>{{ room.name }}</span>
                                                     </div>
                                                     <label>
-                                                        Nazwa biurka
+                                                        {{ 'dashboard.admin_desks.label'|trans }}
                                                         <input type="text" name="labels[{{ desk.id }}]" value="{{ desk.label }}" maxlength="255" required>
                                                     </label>
                                                 </div>
@@ -1428,7 +1428,7 @@
                                     </div>
 
                                     <div style="margin-top: 20px;">
-                                        <button type="submit">Zapisz wszystkie nazwy</button>
+                                        <button type="submit">{{ 'dashboard.admin_desks.submit'|trans }}</button>
                                     </div>
                                 </form>
                             </article>
@@ -1437,61 +1437,61 @@
                         <div class="content-tab-panel" data-content-tab="admin-reports">
                             <article class="panel stack">
                                 <div>
-                                    <div class="eyebrow">Admin / raporty</div>
-                                    <h2>Raporty operacyjne</h2>
+                                    <div class="eyebrow">{{ 'dashboard.admin_reports.eyebrow'|trans }}</div>
+                                    <h2>{{ 'dashboard.admin_reports.title'|trans }}</h2>
                                 </div>
 
                                 <div class="report-grid">
                                     <div class="report-card">
                                         <strong>{{ adminReports.openIssueCount }}</strong>
-                                        <span class="muted">otwarte zgloszenia</span>
+                                        <span class="muted">{{ 'dashboard.admin_reports.open_issues'|trans }}</span>
                                     </div>
                                     <div class="report-card">
                                         <strong>{{ adminReports.waitingCount }}</strong>
-                                        <span class="muted">aktywnych wpisow na waitliscie</span>
+                                        <span class="muted">{{ 'dashboard.admin_reports.waiting'|trans }}</span>
                                     </div>
                                     <div class="report-card">
                                         <strong>{{ adminReports.recurringReservationCount }}</strong>
-                                        <span class="muted">aktywnych rezerwacji cyklicznych</span>
+                                        <span class="muted">{{ 'dashboard.admin_reports.recurring'|trans }}</span>
                                     </div>
                                 </div>
 
                                 <div class="report-grid">
                                     <div class="report-list">
-                                        <h3>Najczesciej zajmowane biurka</h3>
+                                        <h3>{{ 'dashboard.admin_reports.top_busy'|trans }}</h3>
                                         {% for item in adminReports.topBusyDesks %}
                                             <div class="compact-item">
                                                 <strong>{{ item.label }}</strong>
                                                 <span class="muted">{{ item.roomName }}</span>
-                                                <span>{{ item.count }} zajec</span>
+                                                <span>{{ 'dashboard.admin_reports.claim_count'|trans({'%count%': item.count}) }}</span>
                                             </div>
                                         {% else %}
-                                            <p class="muted">Brak danych o zajeciach.</p>
+                                            <p class="muted">{{ 'dashboard.admin_reports.top_busy_empty'|trans }}</p>
                                         {% endfor %}
                                     </div>
 
                                     <div class="report-list">
-                                        <h3>Najczesciej waitlistowane biurka</h3>
+                                        <h3>{{ 'dashboard.admin_reports.top_waitlist'|trans }}</h3>
                                         {% for item in adminReports.topWaitlistedDesks %}
                                             <div class="compact-item">
                                                 <strong>{{ item.label }}</strong>
                                                 <span class="muted">{{ item.roomName }}</span>
-                                                <span>{{ item.count }} wpisow</span>
+                                                <span>{{ 'dashboard.admin_reports.waitlist_count'|trans({'%count%': item.count}) }}</span>
                                             </div>
                                         {% else %}
-                                            <p class="muted">Brak danych o waitliscie.</p>
+                                            <p class="muted">{{ 'dashboard.admin_reports.top_waitlist_empty'|trans }}</p>
                                         {% endfor %}
                                     </div>
 
                                     <div class="report-list">
-                                        <h3>Problemy wg kategorii</h3>
+                                        <h3>{{ 'dashboard.admin_reports.issues_by_category'|trans }}</h3>
                                         {% for item in adminReports.issuesByCategory %}
                                             <div class="compact-item">
                                                 <strong>{{ item.label }}</strong>
-                                                <span>{{ item.count }} zgloszen</span>
+                                                <span>{{ 'dashboard.admin_reports.issue_count'|trans({'%count%': item.count}) }}</span>
                                             </div>
                                         {% else %}
-                                            <p class="muted">Brak zgloszen problemow.</p>
+                                            <p class="muted">{{ 'dashboard.admin_reports.issues_empty'|trans }}</p>
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -1517,6 +1517,7 @@
             const userSearchEmpty = document.querySelector('[data-user-search-empty]');
             const peopleSearchInput = document.querySelector('[data-people-search-input]');
             const peopleSearchItems = Array.from(document.querySelectorAll('[data-people-search-item]'));
+            const userSearchCountLabel = {{ 'dashboard.sidebar.users.count'|trans({'%visible%': '__visible__', '%total%': '__total__'})|json_encode|raw }};
             const url = new URL(window.location.href);
             const initialContentTab = url.searchParams.get('tab');
 
@@ -1561,7 +1562,9 @@
                 });
 
                 if (userSearchCount) {
-                    userSearchCount.textContent = visibleCount + ' z ' + userSearchItems.length + ' uzytkownikow';
+                    userSearchCount.textContent = userSearchCountLabel
+                        .replace('__visible__', String(visibleCount))
+                        .replace('__total__', String(userSearchItems.length));
                 }
 
                 if (userSearchEmpty) {

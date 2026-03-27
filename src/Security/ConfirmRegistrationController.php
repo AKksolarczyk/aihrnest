@@ -24,7 +24,7 @@ final class ConfirmRegistrationController extends AbstractController
         $user = $this->userRepository->findByEmailConfirmationToken($token);
 
         if ($user === null) {
-            $this->addFlash('error', 'Link aktywacyjny jest nieprawidlowy albo wygasl.');
+            $this->addFlash('error', $this->trans('flash.registration.invalid_confirmation'));
 
             return $this->redirectToRoute('app_login');
         }
@@ -33,7 +33,7 @@ final class ConfirmRegistrationController extends AbstractController
         $this->userRepository->save($user);
         $this->workspaceTransaction->flush();
 
-        $this->addFlash('success', 'Konto zostalo aktywowane. Mozesz sie zalogowac.');
+        $this->addFlash('success', $this->trans('flash.registration.activated', locale: $user->locale()));
 
         return $this->redirectToRoute('app_login');
     }

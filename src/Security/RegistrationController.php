@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Security;
 
 use App\Workspace\Application\Command\RegisterUser\RegisterUserCommand;
+use App\Workspace\Domain\Model\User;
 use App\Workspace\Application\Command\RegisterUser\RegisterUserHandler;
 use App\Workspace\Domain\Repository\OfficeLayoutRepositoryInterface;
 use App\Workspace\Domain\Service\WorkspacePlanner;
@@ -33,6 +34,7 @@ final class RegistrationController extends AbstractController
                     $request->request->getString('name'),
                     $request->request->getString('email'),
                     $request->request->getString('team'),
+                    $request->request->getString('locale', $request->getLocale()),
                     $request->request->getString('password'),
                     $request->request->getString('assignedDeskId') ?: null,
                     $request->request->all('schedule'),
@@ -40,14 +42,14 @@ final class RegistrationController extends AbstractController
 
                 try {
                     $this->registrationConfirmationMailer->send($user);
-                    $this->addFlash('success', 'Konto zostalo utworzone. Wyslalismy email z linkiem aktywacyjnym.');
+                    $this->addFlash('success', $this->trans('flash.registration.created'));
                 } catch (Throwable) {
-                    $this->addFlash('error', 'Konto zostalo utworzone, ale nie udalo sie wyslac maila aktywacyjnego.');
+                    $this->addFlash('error', $this->trans('flash.registration.mail_failed'));
                 }
 
                 return $this->redirectToRoute('app_login');
             } catch (Throwable $exception) {
-                $this->addFlash('error', $exception->getMessage());
+                $this->addFlash('error', $this->trans($exception->getMessage()));
             }
         }
 
@@ -57,9 +59,11 @@ final class RegistrationController extends AbstractController
                 'name' => $request->request->getString('name'),
                 'email' => $request->request->getString('email'),
                 'team' => $request->request->getString('team'),
+                'locale' => $request->request->getString('locale', $request->getLocale()),
                 'assignedDeskId' => $request->request->getString('assignedDeskId'),
                 'schedule' => $request->request->all('schedule'),
             ],
+            'languageOptions' => User::SUPPORTED_LOCALES,
         ]);
     }
 }

@@ -1,12 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Pricing{% endblock %}
+{% block title %}{{ 'pricing.meta_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
         :root {
+            --featured-label: "{{ 'pricing.featured'|trans }}";
             --pricing-bg: linear-gradient(180deg, #fbfdff 0%, #eef4ff 48%, #dce8ff 100%);
             --pricing-glow-a: rgba(83, 199, 255, 0.18);
             --pricing-glow-b: rgba(47, 124, 246, 0.14);
@@ -23,6 +24,7 @@
         }
 
         :root[data-theme="dark"] {
+            --featured-label: "{{ 'pricing.featured'|trans }}";
             --pricing-bg: linear-gradient(180deg, #020712 0%, #08111f 48%, #0c1930 100%);
             --pricing-glow-a: rgba(18, 66, 123, 0.34);
             --pricing-glow-b: rgba(29, 78, 216, 0.22);
@@ -163,7 +165,7 @@
         }
 
         .plan.featured::before {
-            content: "Najczesciej wybierany";
+            content: var(--featured-label);
             position: absolute;
             top: 18px;
             right: 18px;
@@ -289,142 +291,136 @@
     <div class="page">
         <section class="hero">
             <div>
-                <div class="eyebrow">Pricing</div>
-                <h1>Plan dla malych biur i wiekszych organizacji.</h1>
-                <p class="lead">
-                    Cennik jest przygotowany w formie prezentacyjnej. Pokazuje, jak Smart Desk moze byc sprzedawany:
-                    od prostego wdrozenia dla jednego biura po wariant z rozbudowana administracja, raportami,
-                    waitlista i wsparciem wdrozeniowym.
-                </p>
+                <div class="eyebrow">{{ 'pricing.eyebrow'|trans }}</div>
+                <h1>{{ 'pricing.hero.title'|trans }}</h1>
+                <p class="lead">{{ 'pricing.hero.body'|trans }}</p>
 
                 <div class="plan-actions">
-                    <a class="button" href="{{ path('app_register') }}">Wyprobuj aplikacje</a>
-                    <a class="button-secondary" href="{{ path('app_about') }}">Zobacz o produkcie</a>
+                    <a class="button" href="{{ path('app_register') }}">{{ 'pricing.hero.cta_primary'|trans }}</a>
+                    <a class="button-secondary" href="{{ path('app_about') }}">{{ 'pricing.hero.cta_secondary'|trans }}</a>
                 </div>
             </div>
 
             <div class="hero-metrics">
                 <div class="metric">
-                    <strong>3 plany</strong>
-                    <span>Od prostego startu po wdrozenie dla wiekszych zespolow.</span>
+                    <strong>{{ 'pricing.metrics.plans.title'|trans }}</strong>
+                    <span>{{ 'pricing.metrics.plans.body'|trans }}</span>
                 </div>
                 <div class="metric">
-                    <strong>Mail + dashboard</strong>
-                    <span>Rejestracja, aktywacja konta, urlopy, waitlista i rezerwacje w jednym przeplywie.</span>
+                    <strong>{{ 'pricing.metrics.flow.title'|trans }}</strong>
+                    <span>{{ 'pricing.metrics.flow.body'|trans }}</span>
                 </div>
                 <div class="metric">
-                    <strong>People finder</strong>
-                    <span>Szybkie sprawdzenie, kto jest danego dnia w biurze i gdzie siedzi.</span>
+                    <strong>{{ 'pricing.metrics.people.title'|trans }}</strong>
+                    <span>{{ 'pricing.metrics.people.body'|trans }}</span>
                 </div>
                 <div class="metric">
-                    <strong>Admin insights</strong>
-                    <span>Raporty operacyjne o oblozeniu, problemach i najbardziej obleganych biurkach.</span>
+                    <strong>{{ 'pricing.metrics.admin.title'|trans }}</strong>
+                    <span>{{ 'pricing.metrics.admin.body'|trans }}</span>
                 </div>
             </div>
         </section>
 
         <section class="section">
-            <div class="eyebrow">Pakiety</div>
-            <h2>Warianty wdrozenia</h2>
+            <div class="eyebrow">{{ 'pricing.packages.eyebrow'|trans }}</div>
+            <h2>{{ 'pricing.packages.title'|trans }}</h2>
 
             <div class="plans">
                 <article class="plan">
                     <div class="plan-header">
-                        <h3>Starter</h3>
-                        <p>Dla jednego biura i zespolu, ktory chce szybko ogarnac rezerwacje biurek.</p>
+                        <h3>{{ 'pricing.starter.title'|trans }}</h3>
+                        <p>{{ 'pricing.starter.body'|trans }}</p>
                     </div>
 
                     <div class="plan-price">
-                        <strong>29 zl</strong>
-                        <span>/ uzytkownik / miesiac</span>
+                        <strong>{{ 'pricing.starter.price'|trans }}</strong>
+                        <span>{{ 'pricing.per_user_month'|trans }}</span>
                     </div>
 
                     <ul>
-                        <li>Widok dnia i mapa biura</li>
-                        <li>Rezerwacje biurek</li>
-                        <li>Rejestracja i aktywacja kont</li>
-                        <li>Podstawowy model urlopow</li>
-                        <li>People finder</li>
+                        <li>{{ 'pricing.starter.feature_1'|trans }}</li>
+                        <li>{{ 'pricing.starter.feature_2'|trans }}</li>
+                        <li>{{ 'pricing.starter.feature_3'|trans }}</li>
+                        <li>{{ 'pricing.starter.feature_4'|trans }}</li>
+                        <li>{{ 'pricing.starter.feature_5'|trans }}</li>
                     </ul>
 
                     <div class="plan-actions">
-                        <a class="button-secondary" href="{{ path('app_register') }}">Start</a>
+                        <a class="button-secondary" href="{{ path('app_register') }}">{{ 'pricing.starter.cta'|trans }}</a>
                     </div>
                 </article>
 
                 <article class="plan featured">
                     <div class="plan-header">
-                        <h3>Growth</h3>
-                        <p>Dla organizacji, ktora chce dorzucic administracje, polityki i wiecej automatyzacji.</p>
+                        <h3>{{ 'pricing.growth.title'|trans }}</h3>
+                        <p>{{ 'pricing.growth.body'|trans }}</p>
                     </div>
 
                     <div class="plan-price">
-                        <strong>59 zl</strong>
-                        <span>/ uzytkownik / miesiac</span>
+                        <strong>{{ 'pricing.growth.price'|trans }}</strong>
+                        <span>{{ 'pricing.per_user_month'|trans }}</span>
                     </div>
 
                     <ul>
-                        <li>Wszystko ze Starter</li>
-                        <li>Waitlista na zajete biurka</li>
-                        <li>Rezerwacje cykliczne</li>
-                        <li>Zglaszanie problemow z zasobami</li>
-                        <li>Role administracyjne</li>
-                        <li>Raporty wykorzystania i operacji</li>
+                        <li>{{ 'pricing.growth.feature_1'|trans }}</li>
+                        <li>{{ 'pricing.growth.feature_2'|trans }}</li>
+                        <li>{{ 'pricing.growth.feature_3'|trans }}</li>
+                        <li>{{ 'pricing.growth.feature_4'|trans }}</li>
+                        <li>{{ 'pricing.growth.feature_5'|trans }}</li>
+                        <li>{{ 'pricing.growth.feature_6'|trans }}</li>
                     </ul>
 
                     <div class="plan-actions">
-                        <a class="button" href="{{ path('app_about') }}">Poznaj produkt</a>
+                        <a class="button" href="{{ path('app_about') }}">{{ 'pricing.growth.cta'|trans }}</a>
                     </div>
                 </article>
 
                 <article class="plan">
                     <div class="plan-header">
-                        <h3>Enterprise</h3>
-                        <p>Dla firm, ktore chca spiac biura, procesy HR i przyszle integracje w jednym produkcie.</p>
+                        <h3>{{ 'pricing.enterprise.title'|trans }}</h3>
+                        <p>{{ 'pricing.enterprise.body'|trans }}</p>
                     </div>
 
                     <div class="plan-price">
-                        <strong>Indywidualnie</strong>
-                        <span>wycena wdrozenia</span>
+                        <strong>{{ 'pricing.enterprise.price'|trans }}</strong>
+                        <span>{{ 'pricing.enterprise.price_note'|trans }}</span>
                     </div>
 
                     <ul>
-                        <li>Wszystko z Growth</li>
-                        <li>Wsparcie wdrozeniowe</li>
-                        <li>Priorytetowe rozwojowe roadmapy</li>
-                        <li>Wielobiurwowy model rozwoju</li>
-                        <li>Przygotowanie pod integracje HR</li>
+                        <li>{{ 'pricing.enterprise.feature_1'|trans }}</li>
+                        <li>{{ 'pricing.enterprise.feature_2'|trans }}</li>
+                        <li>{{ 'pricing.enterprise.feature_3'|trans }}</li>
+                        <li>{{ 'pricing.enterprise.feature_4'|trans }}</li>
+                        <li>{{ 'pricing.enterprise.feature_5'|trans }}</li>
                     </ul>
 
                     <div class="plan-actions">
-                        <a class="button-secondary" href="{{ path('app_login') }}">Demo lokalne</a>
+                        <a class="button-secondary" href="{{ path('app_login') }}">{{ 'pricing.enterprise.cta'|trans }}</a>
                     </div>
                 </article>
             </div>
         </section>
 
         <section class="section">
-            <div class="eyebrow">Dlaczego ten model</div>
-            <h2>Co napedza wartosc produktu</h2>
+            <div class="eyebrow">{{ 'pricing.value.eyebrow'|trans }}</div>
+            <h2>{{ 'pricing.value.title'|trans }}</h2>
 
             <div class="compare-grid">
                 <article class="compare-card">
-                    <strong>Efektywne wykorzystanie przestrzeni</strong>
-                    <p>Biurka i zasoby sa rezerwowane tylko wtedy, gdy rzeczywiscie sa potrzebne, a waitlista pomaga zarzadzac popytem.</p>
+                    <strong>{{ 'pricing.value.space.title'|trans }}</strong>
+                    <p>{{ 'pricing.value.space.body'|trans }}</p>
                 </article>
                 <article class="compare-card">
-                    <strong>Przejrzyste procesy dla pracownikow</strong>
-                    <p>Rejestracja, aktywacja, plan dnia, urlopy, people finder i zglaszanie problemow sa prowadzone przez prosty przeplyw.</p>
+                    <strong>{{ 'pricing.value.process.title'|trans }}</strong>
+                    <p>{{ 'pricing.value.process.body'|trans }}</p>
                 </article>
                 <article class="compare-card">
-                    <strong>Gotowosc do dalszego rozwoju</strong>
-                    <p>Architektura pozwala rozwinac system o sale konferencyjne, HR, wiecej raportow i dodatkowe bounded contexty.</p>
+                    <strong>{{ 'pricing.value.future.title'|trans }}</strong>
+                    <p>{{ 'pricing.value.future.body'|trans }}</p>
                 </article>
             </div>
         </section>
 
-        <p class="footnote">
-            To jest strona prezentacyjna. Cennik ma charakter demonstracyjny i moze sluzyc jako punkt wyjscia do wersji marketingowej.
-        </p>
+        <p class="footnote">{{ 'pricing.footer'|trans }}</p>
     </div>
 {% endblock %}

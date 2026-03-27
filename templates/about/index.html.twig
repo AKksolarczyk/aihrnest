@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}About Smart Desk{% endblock %}
+{% block title %}{{ 'about.meta_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
     <style>
@@ -276,146 +276,139 @@
     <div class="page">
         <section class="hero">
             <div>
-                <div class="eyebrow">Smart Desk & Rooms Scheduler</div>
-                <h1>Biurka, sale i nieobecnosci w jednej aplikacji.</h1>
-                <p class="lead">
-                    Smart Desk porzadkuje planowanie pracy z biura. Pokazuje dostepnosc zasobow w widoku dnia,
-                    pozwala rezerwowac biurka, budowac waitliste, planowac cykliczne obecnosci, zglaszac problemy
-                    z zasobami i przygotowuje fundament pod zarzadzanie salami konferencyjnymi oraz integracje
-                    absencji z systemem HR.
-                </p>
+                <div class="eyebrow">{{ 'about.eyebrow'|trans }}</div>
+                <h1>{{ 'about.hero.title'|trans }}</h1>
+                <p class="lead">{{ 'about.hero.lead'|trans }}</p>
 
                 <div class="hero-actions">
-                    <a class="button" href="{{ path('app_login') }}">Przejdz do logowania</a>
-                    <a class="button-secondary" href="{{ path('app_register') }}">Utworz konto</a>
-                    <a class="button-secondary" href="{{ path('app_dashboard') }}">Otworz dashboard</a>
+                    <a class="button" href="{{ path('app_login') }}">{{ 'about.hero.login'|trans }}</a>
+                    <a class="button-secondary" href="{{ path('app_register') }}">{{ 'about.hero.register'|trans }}</a>
+                    <a class="button-secondary" href="{{ path('app_dashboard') }}">{{ 'about.hero.dashboard'|trans }}</a>
                 </div>
             </div>
 
             <div class="hero-pills">
                 <div class="pill">
-                    <strong>Desk Booking</strong>
-                    <span>Rezerwacja biurek na konkretny dzien z widokiem mapy biura.</span>
+                    <strong>{{ 'about.pill.booking_title'|trans }}</strong>
+                    <span>{{ 'about.pill.booking'|trans }}</span>
                 </div>
                 <div class="pill">
-                    <strong>Waitlist + Cyklicznosc</strong>
-                    <span>Lista oczekujacych na zajete miejsca i reguly cyklicznych zajec biurek.</span>
+                    <strong>{{ 'about.pill.waitlist_title'|trans }}</strong>
+                    <span>{{ 'about.pill.waitlist'|trans }}</span>
                 </div>
                 <div class="pill">
-                    <strong>People Finder</strong>
-                    <span>Szybki widok osob obecnych w biurze wraz z lokalizacja i statusem.</span>
+                    <strong>{{ 'about.pill.people_title'|trans }}</strong>
+                    <span>{{ 'about.pill.people'|trans }}</span>
                 </div>
                 <div class="pill">
-                    <strong>Admin Reports</strong>
-                    <span>Operacyjne raporty o zajeciach, waitliscie i zgloszeniach problemow.</span>
+                    <strong>{{ 'about.pill.reports_title'|trans }}</strong>
+                    <span>{{ 'about.pill.reports'|trans }}</span>
                 </div>
             </div>
         </section>
 
         <section class="section stack">
             <div>
-                <div class="eyebrow">Mozliwosci aplikacji</div>
-                <h2>Co potrafi system na obecnym etapie</h2>
+                <div class="eyebrow">{{ 'about.features.eyebrow'|trans }}</div>
+                <h2>{{ 'about.features.title'|trans }}</h2>
             </div>
 
             <div class="grid">
                 <article class="card">
-                    <h3>Rejestracja i aktywacja konta</h3>
-                    <p>Uzytkownik zaklada konto, dostaje mail aktywacyjny i dopiero po potwierdzeniu moze sie zalogowac.</p>
+                    <h3>{{ 'about.features.registration.title'|trans }}</h3>
+                    <p>{{ 'about.features.registration.body'|trans }}</p>
                 </article>
                 <article class="card">
-                    <h3>Dashboard dnia</h3>
-                    <p>Widok dnia pokazuje dostepnosc biurek, aktywnych uzytkownikow, zaplanowane urlopy i szybkie akcje.</p>
+                    <h3>{{ 'about.features.dashboard.title'|trans }}</h3>
+                    <p>{{ 'about.features.dashboard.body'|trans }}</p>
                 </article>
                 <article class="card">
-                    <h3>Rezerwacja biurek</h3>
-                    <p>System pozwala zajac wolne biurko na wybrany dzien i pilnuje konfliktow dostepnosci.</p>
+                    <h3>{{ 'about.features.booking.title'|trans }}</h3>
+                    <p>{{ 'about.features.booking.body'|trans }}</p>
                 </article>
                 <article class="card">
-                    <h3>Model nieobecnosci</h3>
-                    <p>Urlopy odejmuja dni z puli i blokowane sa pokrywajace sie zakresy dla tego samego uzytkownika.</p>
+                    <h3>{{ 'about.features.absence.title'|trans }}</h3>
+                    <p>{{ 'about.features.absence.body'|trans }}</p>
                 </article>
                 <article class="card">
-                    <h3>Waitlista i cyklicznosc</h3>
-                    <p>Zajete biurka wspieraja kolejke oczekujacych, a powtarzalne przyjscia do biura mozna zapisac jako rezerwacje cykliczne.</p>
+                    <h3>{{ 'about.features.waitlist.title'|trans }}</h3>
+                    <p>{{ 'about.features.waitlist.body'|trans }}</p>
                 </article>
                 <article class="card">
-                    <h3>Zgloszenia i raporty</h3>
-                    <p>Uzytkownicy raportuja problemy z biurkami i pokojami, a administrator widzi raporty wykorzystania i zatorow operacyjnych.</p>
+                    <h3>{{ 'about.features.reporting.title'|trans }}</h3>
+                    <p>{{ 'about.features.reporting.body'|trans }}</p>
                 </article>
             </div>
         </section>
 
         <section class="section stack">
             <div>
-                <div class="eyebrow">Stack technologiczny</div>
-                <h2>Na czym to stoi</h2>
+                <div class="eyebrow">{{ 'about.stack.eyebrow'|trans }}</div>
+                <h2>{{ 'about.stack.title'|trans }}</h2>
             </div>
 
             <div class="tech-grid">
                 <article class="tech">
                     <small>Backend</small>
                     <strong>PHP 8.4 + Symfony 7.4</strong>
-                    <p>Runtime aplikacji, routing, DI, security, mailer i obsluga warstwy HTTP.</p>
+                    <p>{{ 'about.stack.backend'|trans }}</p>
                 </article>
                 <article class="tech">
-                    <small>Architektura</small>
+                    <small>{{ 'about.stack.architecture.label'|trans }}</small>
                     <strong>DDD + CQRS</strong>
-                    <p>Podzial na Domain, Application, Infrastructure i UI oraz rozdzial command i query.</p>
+                    <p>{{ 'about.stack.architecture.body'|trans }}</p>
                 </article>
                 <article class="tech">
-                    <small>Persystencja</small>
+                    <small>{{ 'about.stack.persistence.label'|trans }}</small>
                     <strong>Doctrine ORM + PostgreSQL</strong>
-                    <p>Modele domenowe sa encjami Doctrine, a baza przygotowuje aplikacje do dalszego rozwoju.</p>
+                    <p>{{ 'about.stack.persistence.body'|trans }}</p>
                 </article>
                 <article class="tech">
                     <small>Local Dev</small>
                     <strong>Docker + Traefik + Mailpit</strong>
-                    <p>Lokalny runtime, routing po hostach i przechwytywanie maili aktywacyjnych podczas developmentu.</p>
+                    <p>{{ 'about.stack.dev'|trans }}</p>
                 </article>
             </div>
         </section>
 
         <section class="section stack">
             <div>
-                <div class="eyebrow">Przeplyw</div>
-                <h2>Jak dziala aplikacja</h2>
+                <div class="eyebrow">{{ 'about.flow.eyebrow'|trans }}</div>
+                <h2>{{ 'about.flow.title'|trans }}</h2>
             </div>
 
             <div class="timeline">
                 <article class="step">
                     <div class="step-number">1</div>
                     <div>
-                        <h3>Utworzenie konta</h3>
-                        <p>Nowy uzytkownik rejestruje konto, podaje harmonogram dni biurowych i opcjonalnie przypisane biurko.</p>
+                        <h3>{{ 'about.flow.step1.title'|trans }}</h3>
+                        <p>{{ 'about.flow.step1.body'|trans }}</p>
                     </div>
                 </article>
                 <article class="step">
                     <div class="step-number">2</div>
                     <div>
-                        <h3>Aktywacja przez email</h3>
-                        <p>System wysyla lokalnie mail z linkiem aktywacyjnym. Bez potwierdzenia konto pozostaje nieaktywne.</p>
+                        <h3>{{ 'about.flow.step2.title'|trans }}</h3>
+                        <p>{{ 'about.flow.step2.body'|trans }}</p>
                     </div>
                 </article>
                 <article class="step">
                     <div class="step-number">3</div>
                     <div>
-                        <h3>Plan dnia i rezerwacje</h3>
-                        <p>Po zalogowaniu uzytkownik widzi status zasobow, zajmuje biurko, dolacza do waitlisty albo tworzy rezerwacje cykliczne.</p>
+                        <h3>{{ 'about.flow.step3.title'|trans }}</h3>
+                        <p>{{ 'about.flow.step3.body'|trans }}</p>
                     </div>
                 </article>
                 <article class="step">
                     <div class="step-number">4</div>
                     <div>
-                        <h3>Operacje i nadzor</h3>
-                        <p>Use case'y pilnuja konfliktow, people finder pokazuje kto siedzi gdzie, a admin dostaje raporty i zgloszenia problemow.</p>
+                        <h3>{{ 'about.flow.step4.title'|trans }}</h3>
+                        <p>{{ 'about.flow.step4.body'|trans }}</p>
                     </div>
                 </article>
             </div>
         </section>
 
-        <p class="footer-note">
-            Ta strona podsumowuje obecny stan produktu. Szczegolowe zasady domenowe i architektoniczne sa opisane w `docs/context`.
-        </p>
+        <p class="footer-note">{{ 'about.footer'|trans }}</p>
     </div>
 {% endblock %}

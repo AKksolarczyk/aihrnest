@@ -1,0 +1,405 @@
+app:
+  title: 'Smart Desk'
+
+theme:
+  toggle: 'Change theme'
+  dark: 'Dark'
+  light: 'Light'
+
+language:
+  switch: 'Change language'
+  label:
+    pl: 'PL'
+    en: 'EN'
+  option:
+    pl: 'Polish'
+    en: 'English'
+
+common:
+  email: 'Email'
+  password: 'Password'
+  full_name: 'Full name'
+  team: 'Team'
+  language: 'Interface language'
+  none: 'None'
+  from: 'From'
+  to: 'To'
+
+weekday:
+  long:
+    monday: 'Monday'
+    tuesday: 'Tuesday'
+    wednesday: 'Wednesday'
+    thursday: 'Thursday'
+    friday: 'Friday'
+  short:
+    monday: 'Mon'
+    tuesday: 'Tue'
+    wednesday: 'Wed'
+    thursday: 'Thu'
+    friday: 'Fri'
+
+login:
+  title: 'Sign in'
+  subtitle: 'Use the email address and password assigned to the account. Sign-in is available only after email confirmation.'
+  submit: 'Sign in'
+  no_account: "Don't have an account?"
+  link: 'Go to sign in'
+  dev:
+    title: 'Dev quick login'
+    account: 'Test account'
+    hint: 'When the page opens, the first account is prefilled automatically. You can click "Sign in" right away.'
+
+register:
+  title: 'Create account'
+  subtitle: 'Registration creates a sign-in account. After submitting the form you will receive an activation email. Assigned desk is optional.'
+  link: 'Register'
+  submit: 'Create account'
+  has_account: 'Already have an account?'
+  assigned_desk:
+    label: 'Assigned desk'
+    none: 'No assigned desk'
+  schedule:
+    title: 'Office days schedule'
+
+flash:
+  registration:
+    created: 'The account has been created. We sent an email with the activation link.'
+    mail_failed: 'The account has been created, but the activation email could not be sent.'
+    invalid_confirmation: 'The activation link is invalid or expired.'
+    activated: 'The account has been activated. You can sign in now.'
+  vacation:
+    saved: 'Vacation has been saved and the assigned desk will be released.'
+  claim:
+    created: 'A free desk has been claimed.'
+    released: 'The desk has been released.'
+  waitlist:
+    joined: 'The user has been added to the waitlist for the selected desk.'
+    invalid_link: 'The desk claim link is invalid or expired.'
+    claimed: 'The desk from the waitlist has been claimed.'
+  recurring:
+    created: 'Recurring reservation saved. %created% claims created, %skipped% conflicts skipped.'
+  issue:
+    created: 'Issue report has been saved.'
+  admin:
+    desks_updated: '%count% desk names updated.'
+
+mail:
+  registration:
+    subject: 'Confirm your Smart Desk account'
+    greeting: 'Hi %name%,'
+    intro: 'To activate your Smart Desk account, click the link below:'
+    cta: 'Confirm account'
+    outro: 'After confirming the account you will be able to sign in.'
+    text: "Hi %name%,\n\nTo activate your Smart Desk account, click the link:\n%url%\n\nAfter confirming the account you will be able to sign in."
+  waitlist:
+    subject: 'A desk from the waitlist is now free'
+    greeting: 'Hi %name%,'
+    intro: 'Desk %desk% (%room%) for %date% has been released.'
+    cta: 'Claim this desk'
+    outro: 'The link works only if the desk is still available.'
+    text: "Hi %name%,\n\nDesk %desk% (%room%) for %date% has been released.\nClick the link to claim it:\n%url%\n\nThe link works only if the desk is still free."
+
+about:
+  meta_title: 'About Smart Desk'
+  eyebrow: 'Smart Desk & Rooms Scheduler'
+  hero:
+    title: 'Desks, rooms and absences in one app.'
+    lead: 'Smart Desk organizes office planning. It shows resource availability in a day view, allows desk booking, builds a waitlist, plans recurring attendance, reports issues and prepares the foundation for conference room management and HR absence integration.'
+    login: 'Go to sign in'
+    register: 'Create account'
+    dashboard: 'Open dashboard'
+  pill:
+    booking_title: 'Desk Booking'
+    booking: 'Desk booking for a specific day with an office map view.'
+    waitlist_title: 'Waitlist + Recurrence'
+    waitlist: 'Queue for occupied desks and rules for recurring desk claims.'
+    people_title: 'People Finder'
+    people: 'Quick view of people currently in the office with location and status.'
+    reports_title: 'Admin Reports'
+    reports: 'Operational reports about occupancy, waitlists and issue reports.'
+  features:
+    eyebrow: 'Product capabilities'
+    title: 'What the system can do right now'
+    registration:
+      title: 'Registration and account activation'
+      body: 'A user creates an account, receives an activation email and can sign in only after confirmation.'
+    dashboard:
+      title: 'Day dashboard'
+      body: 'The day view shows desk availability, active users, planned vacations and quick actions.'
+    booking:
+      title: 'Desk booking'
+      body: 'The system allows claiming a free desk for the selected day and protects availability conflicts.'
+    absence:
+      title: 'Absence model'
+      body: 'Vacations reduce the balance and overlapping ranges for the same user are blocked.'
+    waitlist:
+      title: 'Waitlist and recurrence'
+      body: 'Occupied desks support a waiting queue, and recurring office attendance can be saved as recurring reservations.'
+    reporting:
+      title: 'Issues and reports'
+      body: 'Users report desk and room problems, while the administrator sees usage and operational bottleneck reports.'
+  stack:
+    eyebrow: 'Technology stack'
+    title: 'What it runs on'
+    backend: 'Application runtime, routing, DI, security, mailer and HTTP layer handling.'
+    architecture:
+      label: 'Architecture'
+      body: 'Split into Domain, Application, Infrastructure and UI with command/query separation.'
+    persistence:
+      label: 'Persistence'
+      body: 'Domain models are Doctrine entities and the database prepares the application for further growth.'
+    dev: 'Local runtime, host-based routing and activation email capture during development.'
+  flow:
+    eyebrow: 'Flow'
+    title: 'How the app works'
+    step1:
+      title: 'Account creation'
+      body: 'A new user registers an account, selects office days and optionally an assigned desk.'
+    step2:
+      title: 'Email activation'
+      body: 'The system sends a local email with an activation link. Without confirmation the account remains inactive.'
+    step3:
+      title: 'Day plan and booking'
+      body: 'After sign-in, the user sees resource status, claims a desk, joins a waitlist or creates recurring reservations.'
+    step4:
+      title: 'Operations and supervision'
+      body: 'Use cases protect conflicts, people finder shows who sits where, and the admin gets reports and issue reports.'
+  footer: 'This page summarizes the current product state. Detailed domain and architecture rules are described in docs/context.'
+
+pricing:
+  meta_title: 'Pricing'
+  eyebrow: 'Pricing'
+  featured: 'Most popular'
+  hero:
+    title: 'A plan for small offices and larger organizations.'
+    body: 'This pricing page is presentation-oriented. It shows how Smart Desk could be sold: from a simple single-office rollout to a variant with extended administration, reports, waitlists and implementation support.'
+    cta_primary: 'Try the app'
+    cta_secondary: 'See the product'
+  metrics:
+    plans:
+      title: '3 plans'
+      body: 'From a simple start to rollout for bigger teams.'
+    flow:
+      title: 'Mail + dashboard'
+      body: 'Registration, activation, vacations, waitlist and bookings in one flow.'
+    people:
+      title: 'People finder'
+      body: 'Quickly check who is in the office that day and where they sit.'
+    admin:
+      title: 'Admin insights'
+      body: 'Operational reports on occupancy, issues and the most demanded desks.'
+  packages:
+    eyebrow: 'Packages'
+    title: 'Implementation options'
+  per_user_month: '/ user / month'
+  starter:
+    title: 'Starter'
+    price: 'PLN 29'
+    body: 'For one office and a team that wants to quickly organize desk booking.'
+    feature_1: 'Day view and office map'
+    feature_2: 'Desk bookings'
+    feature_3: 'Registration and account activation'
+    feature_4: 'Basic vacation model'
+    feature_5: 'People finder'
+    cta: 'Start'
+  growth:
+    title: 'Growth'
+    price: 'PLN 59'
+    body: 'For an organization that wants administration, policies and more automation.'
+    feature_1: 'Everything in Starter'
+    feature_2: 'Waitlist for occupied desks'
+    feature_3: 'Recurring bookings'
+    feature_4: 'Issue reporting for resources'
+    feature_5: 'Administrative roles'
+    feature_6: 'Usage and operations reports'
+    cta: 'Explore product'
+  enterprise:
+    title: 'Enterprise'
+    body: 'For companies that want to connect offices, HR processes and future integrations in one product.'
+    price: 'Custom'
+    price_note: 'implementation quote'
+    feature_1: 'Everything in Growth'
+    feature_2: 'Implementation support'
+    feature_3: 'Priority roadmap work'
+    feature_4: 'Multi-office growth model'
+    feature_5: 'Prepared for HR integrations'
+    cta: 'Local demo'
+  value:
+    eyebrow: 'Why this model'
+    title: 'What drives product value'
+    space:
+      title: 'Efficient space usage'
+      body: 'Desks and resources are booked only when really needed, and the waitlist helps manage demand.'
+    process:
+      title: 'Clear employee processes'
+      body: 'Registration, activation, day planning, vacations, people finder and issue reporting are all handled through one simple flow.'
+    future:
+      title: 'Ready for further growth'
+      body: 'The architecture allows the system to grow with meeting rooms, HR, more reports and additional bounded contexts.'
+  footer: 'This is a presentation page. Pricing is illustrative and can serve as a starting point for a marketing version.'
+
+dashboard:
+  common:
+    role: 'Role'
+    desk: 'Desk'
+  role:
+    admin: 'Admin'
+    user: 'User'
+  topbar:
+    aria: 'Signed-in user'
+    logged_as: 'Signed in as'
+    team: 'Team'
+    logout: 'Sign out'
+  sidebar:
+    day:
+      eyebrow: 'DeskFlow / work day'
+      title: 'Work day'
+      label: 'Business day'
+    active_user: 'Active user'
+    users:
+      eyebrow: 'DeskFlow / users'
+      search: 'Search user'
+      search_placeholder: 'Name, team, role or status'
+      count: '%visible% of %total% users'
+      empty: 'No users match the search.'
+      tabs_aria: 'User tabs'
+      status:
+        vacation: 'Vacation today'
+        desk_today: 'Desk today: %desk%'
+        no_desk_today: 'No desk today'
+  section:
+    actions: 'Tab: actions'
+    history: 'Tab: history'
+  vacation:
+    title: 'Vacation request'
+    start: 'Vacation start'
+    end: 'Vacation end'
+    submit: 'Save vacation'
+  claim:
+    title: 'Assign a desk for this day'
+    on_vacation: 'The user is on vacation, so a desk cannot be assigned.'
+    already_has_desk: 'This desk is already occupied by the active user on the selected day.'
+    current: 'Currently occupied desk'
+    release: 'Release desk'
+    help: 'The user has no assigned desk for the selected day, so you can assign one of the free desks.'
+    available_desk: 'Free desk'
+    no_free_desks: 'No free desks'
+    submit: 'Assign and claim desk'
+  recurring:
+    title: 'Recurring reservation'
+    weekdays: 'Weekdays'
+    submit: 'Create recurring reservation'
+  issue:
+    title: 'Report issue'
+    category: 'Category'
+    room: 'Room'
+    description: 'Description'
+    submit: 'Send report'
+  issue_category:
+    sprzet: 'Hardware'
+    komfort: 'Comfort'
+    siec: 'Network'
+    inne: 'Other'
+  history:
+    title: 'Active user history'
+    vacations: 'Planned vacations'
+    vacation_saved: 'Vacation saved'
+    vacations_empty: 'No vacation requests for the active user.'
+    claims: 'Free desk claims'
+    claim_saved: 'Additional desk claimed'
+    claims_empty: 'No additional desk claims for the active user.'
+    waitlist: 'Waitlist'
+    waitlist_empty: 'No waitlist entries.'
+    recurring: 'Recurring reservations'
+    recurring_empty: 'No recurring reservations.'
+    issues: 'Reported issues'
+    issues_empty: 'No issue reports.'
+  tabs:
+    aria: 'Main view tabs'
+    desks: 'Desks'
+    week: 'Week'
+    people: 'People finder'
+    admin_desks: 'Desk editing'
+    admin_reports: 'Reports'
+  desks:
+    eyebrow: 'Tab: desks'
+    title: 'Room plan'
+    view_toggle: 'Toggle desk view'
+    cards: 'Card view'
+    map: '2D map'
+    join_waitlist: 'Join waitlist'
+    free: 'Desk available'
+    user_on_vacation: '%name% is on vacation'
+    user_has_desk: '%name% already has a desk'
+    claim_as: 'Claim as %name%'
+    legend:
+      free: 'Free desk'
+      busy: 'Occupied desk'
+  week:
+    eyebrow: 'Tab: week'
+    title: '5-day perspective'
+    summary: '%occupied% occupied / %free% free'
+    vacation: '%count% on vacation'
+  people:
+    eyebrow: 'Tab: people finder'
+    title: 'Who is in the office today'
+    search: 'Search by person, team or desk'
+    placeholder: 'For example Anna, Product, A-01'
+    empty: 'No people in the office for the selected day.'
+    no_desk: 'no desk'
+  admin_desks:
+    eyebrow: 'Admin / desks'
+    title: 'Edit desk names'
+    lead: 'This view is available only to administrators and lets them change the names shown in room plans and bookings. You can enter several changes at once and save them with one button or the Enter key.'
+    label: 'Desk name'
+    submit: 'Save all names'
+  admin_reports:
+    eyebrow: 'Admin / reports'
+    title: 'Operational reports'
+    open_issues: 'open reports'
+    waiting: 'active waitlist entries'
+    recurring: 'active recurring reservations'
+    top_busy: 'Most occupied desks'
+    top_busy_empty: 'No occupancy data.'
+    top_waitlist: 'Most waitlisted desks'
+    top_waitlist_empty: 'No waitlist data.'
+    issues_by_category: 'Issues by category'
+    issues_empty: 'No issue reports.'
+    claim_count: '%count% claims'
+    waitlist_count: '%count% entries'
+    issue_count: '%count% reports'
+  waitlist_status:
+    waiting: 'Waiting'
+    offered: 'Offer sent'
+    fulfilled: 'Claimed'
+    cancelled: 'Cancelled'
+  issue_status:
+    open: 'Open'
+    closed: 'Closed'
+  status:
+    vacation: 'Vacation'
+    assigned_desk: 'Working from assigned desk'
+    claimed_desk: 'Claimed a free desk'
+    no_assigned_desk: 'No assigned desk'
+    no_desk: 'No desk on this day'
+  occupancy:
+    schedule: 'assigned desk'
+    claim: 'claimed from free pool'
+'Wybrane biurko nie istnieje.': 'The selected desk does not exist.'
+'Nie przeslano zadnych nazw biurek do zapisania.': 'No desk names were submitted for saving.'
+'Data koncowa urlopu nie moze byc wczesniejsza niz poczatkowa.': 'Vacation end date cannot be earlier than start date.'
+'Nie znaleziono wskazanego uzytkownika.': 'The selected user was not found.'
+'W wybranym zakresie nie ma zadnych dni roboczych do rozliczenia.': 'There are no business days in the selected range to settle.'
+'Uzytkownik ma juz urlop w podanym zakresie.': 'The user already has vacation in the selected range.'
+'Data koncowa nie moze byc wczesniejsza niz poczatkowa.': 'End date cannot be earlier than start date.'
+'Wybierz przynajmniej jeden dzien tygodnia.': 'Select at least one weekday.'
+'Uzytkownik z takim adresem email juz istnieje.': 'A user with this email address already exists.'
+'Haslo musi miec co najmniej 8 znakow.': 'Password must be at least 8 characters long.'
+'Wybrane pomieszczenie nie istnieje.': 'The selected room does not exist.'
+'Brak zajecia biurka do zwolnienia w wybranym dniu.': 'There is no desk claim to release on the selected day.'
+'Ten uzytkownik ma juz przydzielone biurko w wybranym dniu.': 'This user already has a desk assigned on the selected day.'
+'Wybrane biurko nie jest wolne.': 'The selected desk is not free.'
+'Uzytkownik jest juz na waitliscie dla tego biurka i dnia.': 'The user is already on the waitlist for this desk and day.'
+'Biurko jest wolne. Nie trzeba dodawac waitlisty.': 'The desk is free. There is no need to join the waitlist.'
+'Brakuje dni urlopu. Wniosek wymaga %d dni roboczych, a pozostalo %d.': 'Not enough vacation days. The request requires %d business days and %d remain.'
