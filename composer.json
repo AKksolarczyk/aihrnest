@@ -18,6 +18,7 @@
         "symfony/yaml": "7.4.*"
     },
     "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "*",
         "symfony/stopwatch": "7.4.*",
         "symfony/web-profiler-bundle": "7.4.*"
     },
