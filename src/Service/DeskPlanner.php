@@ -29,19 +29,22 @@ final class DeskPlanner
 
         $dailyPlan = $this->buildDailyPlan($selectedDate, $state, $deskMap);
         $userStatuses = $this->buildUserStatuses($selectedDate, $users, $deskMap, $dailyPlan);
+        $activeUserStatus = $this->findActiveUserStatus($userStatuses, $activeUserId);
         $rooms = $this->buildRoomsView($this->layoutProvider->getRooms(), $dailyPlan, $deskMap);
         $weekOverview = $this->buildWeekOverview($selectedDate, $state, $deskMap);
+        $activeUserVacations = $this->buildVacationsViewForUser($state['vacations'] ?? [], $users, $activeUserId);
+        $activeUserDeskClaims = $this->buildDeskClaimsViewForUser($state['deskClaims'] ?? [], $users, $deskMap, $activeUserId);
 
         return [
             'selectedDate' => $selectedDate,
             'activeUser' => $users[$activeUserId] ?? null,
+            'activeUserStatus' => $activeUserStatus,
             'users' => array_values($users),
             'rooms' => $rooms,
             'weekOverview' => $weekOverview,
-            'userStatuses' => $userStatuses,
             'availableDesks' => $dailyPlan['availableDesks'],
-            'vacations' => $this->buildVacationsView($state['vacations'] ?? [], $users),
-            'deskClaims' => $this->buildDeskClaimsView($state['deskClaims'] ?? [], $users, $deskMap),
+            'vacations' => $activeUserVacations,
+            'deskClaims' => $activeUserDeskClaims,
             'summary' => [
                 'occupiedCount' => count($dailyPlan['occupancy']),
                 'freeCount' => count($dailyPlan['availableDesks']),
@@ -66,12 +69,36 @@ final class DeskPlanner
             throw new InvalidArgumentException('Nie znaleziono wskazanego uzytkownika.');
         }
 
+        $requestedDays = $this->countBusinessDays($startDate, $endDate);
+        $remainingDays = (int) ($users[$userId]['vacationDaysRemaining'] ?? 0);
+
+        if ($requestedDays < 1) {
+            throw new InvalidArgumentException('W wybranym zakresie nie ma zadnych dni roboczych do rozliczenia.');
+        }
+
+        if ($requestedDays > $remainingDays) {
+            throw new InvalidArgumentException(sprintf(
+                'Brakuje dni urlopu. Wniosek wymaga %d dni roboczych, a pozostalo %d.',
+                $requestedDays,
+                $remainingDays
+            ));
+        }
+
         $state['vacations'][] = [
             'id' => sprintf('vac-%s', bin2hex(random_bytes(4))),
             'userId' => $userId,
             'startDate' => $startDate->format('Y-m-d'),
             'endDate' => $endDate->format('Y-m-d'),
         ];
+        $state['users'] = array_map(static function (array $user) use ($userId, $requestedDays): array {
+            if ($user['id'] !== $userId) {
+                return $user;
+            }
+
+            $user['vacationDaysRemaining'] = max(0, ((int) ($user['vacationDaysRemaining'] ?? 0)) - $requestedDays);
+
+            return $user;
+        }, $state['users'] ?? []);
 
         $this->stateStore->save($state);
     }
@@ -232,6 +259,8 @@ final class DeskPlanner
                 'team' => $user['team'],
                 'assignedDeskLabel' => $deskMap[$user['assignedDeskId']]['label'] ?? $user['assignedDeskId'],
                 'schedule' => $user['schedule'],
+                'vacationDaysTotal' => (int) ($user['vacationDaysTotal'] ?? 0),
+                'vacationDaysRemaining' => (int) ($user['vacationDaysRemaining'] ?? 0),
                 'isOnVacation' => $isOnVacation,
                 'isScheduledToday' => $isScheduled,
                 'deskLabel' => $deskId ? ($deskMap[$deskId]['label'] ?? $deskId) : null,
@@ -245,6 +274,21 @@ final class DeskPlanner
         }
 
         return $statuses;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $userStatuses
+     * @return array<string, mixed>|null
+     */
+    private function findActiveUserStatus(array $userStatuses, string $activeUserId): ?array
+    {
+        foreach ($userStatuses as $status) {
+            if ($status['id'] === $activeUserId) {
+                return $status;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -323,6 +367,21 @@ final class DeskPlanner
     }
 
     /**
+     * @param array<int, array<string, mixed>> $vacations
+     * @param array<string, array<string, mixed>> $users
+     * @return array<int, array<string, string>>
+     */
+    private function buildVacationsViewForUser(array $vacations, array $users, string $userId): array
+    {
+        $filteredVacations = array_values(array_filter(
+            $vacations,
+            static fn (array $vacation): bool => $vacation['userId'] === $userId
+        ));
+
+        return $this->buildVacationsView($filteredVacations, $users);
+    }
+
+    /**
      * @param array<int, array<string, mixed>> $claims
      * @param array<string, array<string, mixed>> $users
      * @param array<string, array<string, string>> $deskMap
@@ -339,6 +398,22 @@ final class DeskPlanner
                 'date' => $claim['date'],
             ];
         }, $claims);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $claims
+     * @param array<string, array<string, mixed>> $users
+     * @param array<string, array<string, string>> $deskMap
+     * @return array<int, array<string, string>>
+     */
+    private function buildDeskClaimsViewForUser(array $claims, array $users, array $deskMap, string $userId): array
+    {
+        $filteredClaims = array_values(array_filter(
+            $claims,
+            static fn (array $claim): bool => $claim['userId'] === $userId
+        ));
+
+        return $this->buildDeskClaimsView($filteredClaims, $users, $deskMap);
     }
 
     /**
@@ -367,5 +442,23 @@ final class DeskPlanner
         }
 
         return false;
+    }
+
+    private function countBusinessDays(DateTimeImmutable $startDate, DateTimeImmutable $endDate): int
+    {
+        $days = 0;
+        $currentDate = $startDate;
+
+        while ($currentDate <= $endDate) {
+            $dayOfWeek = (int) $currentDate->format('N');
+
+            if ($dayOfWeek <= 5) {
+                ++$days;
+            }
+
+            $currentDate = $currentDate->modify('+1 day');
+        }
+
+        return $days;
     }
 }
