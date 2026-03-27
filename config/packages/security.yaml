@@ -22,12 +22,13 @@ security:
                 default_target_path: app_dashboard
                 enable_csrf: true
             logout:
-                path: _security_logout
+                path: app_logout
                 target: app_login
 
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/, roles: ROLE_USER }
 
 when@test:

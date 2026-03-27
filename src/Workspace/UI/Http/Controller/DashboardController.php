@@ -10,7 +10,13 @@ use App\Workspace\Application\Command\RequestVacation\RequestVacationCommand;
 use App\Workspace\Application\Command\RequestVacation\RequestVacationHandler;
 use App\Workspace\Application\Query\GetDashboard\GetDashboardHandler;
 use App\Workspace\Application\Query\GetDashboard\GetDashboardQuery;
+use App\Workspace\Domain\Model\DeskLabel;
+use App\Workspace\Domain\Repository\DeskLabelRepositoryInterface;
+use App\Workspace\Domain\Repository\OfficeLayoutRepositoryInterface;
+use App\Workspace\Domain\Repository\WorkspaceTransactionInterface;
+use App\Workspace\Domain\Service\WorkspacePlanner;
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -84,6 +90,46 @@ final class DashboardController extends AbstractController
             $session->getFlashBag()->add('success', 'Wolne biurko zostalo zajete.');
         } catch (Throwable $exception) {
             $session->getFlashBag()->add('error', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('app_dashboard', ['date' => $date]);
+    }
+
+    #[Route('/admin/desks/{deskId}/label', name: 'app_admin_desk_label_update', methods: ['POST'])]
+    public function updateDeskLabel(
+        string $deskId,
+        Request $request,
+        SessionInterface $session,
+        OfficeLayoutRepositoryInterface $officeLayoutRepository,
+        DeskLabelRepositoryInterface $deskLabelRepository,
+        WorkspacePlanner $workspacePlanner,
+        WorkspaceTransactionInterface $transaction,
+    ): RedirectResponse {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $date = $request->request->getString('date', date('Y-m-d'));
+        $activeUserId = $request->request->getString('activeUserId');
+
+        try {
+            $label = $request->request->getString('label');
+            $deskMap = $workspacePlanner->buildDeskMap($officeLayoutRepository->findAllRooms());
+
+            if (!isset($deskMap[$deskId])) {
+                throw new InvalidArgumentException('Wybrane biurko nie istnieje.');
+            }
+
+            $deskLabel = $deskLabelRepository->findByDeskId($deskId) ?? new DeskLabel($deskId, $label);
+            $deskLabel->rename($label);
+            $deskLabelRepository->save($deskLabel);
+            $transaction->flush();
+
+            $session->getFlashBag()->add('success', sprintf('Nazwa biurka %s zostala zaktualizowana.', $deskId));
+        } catch (Throwable $exception) {
+            $session->getFlashBag()->add('error', $exception->getMessage());
+        }
+
+        if ($activeUserId !== '') {
+            $session->set('active_user_id', $activeUserId);
         }
 
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);

@@ -92,6 +92,65 @@
             gap: 24px;
         }
 
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 20px;
+            border-radius: 24px;
+            border: 1px solid rgba(140, 181, 255, 0.18);
+            background: linear-gradient(180deg, rgba(10, 24, 45, 0.82) 0%, rgba(17, 36, 71, 0.76) 100%);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(18px);
+        }
+
+        .topbar-user {
+            display: grid;
+            gap: 4px;
+        }
+
+        .topbar-label {
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--cyan);
+            font-size: 0.72rem;
+            font-weight: 800;
+        }
+
+        .topbar strong {
+            font-size: 1.05rem;
+            color: #ffffff;
+        }
+
+        .topbar-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .topbar-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 18px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 800;
+            transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+        }
+
+        .topbar-link:hover {
+            transform: translateY(-1px);
+        }
+
         .panel {
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(241, 247, 255, 0.92) 100%);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -543,6 +602,65 @@
             background: rgba(255, 255, 255, 0.82);
         }
 
+        .admin-desk-grid {
+            display: grid;
+            gap: 14px;
+        }
+
+        .content-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .content-tab-button {
+            border: 1px solid rgba(47, 124, 246, 0.14);
+            background: rgba(255, 255, 255, 0.86);
+            color: var(--ink);
+            border-radius: 999px;
+            padding: 12px 18px;
+            font-weight: 800;
+            box-shadow: none;
+        }
+
+        .content-tab-button.active {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2f7cf6 65%, #53c7ff 100%);
+            color: #eff6ff;
+            border-color: transparent;
+            box-shadow: 0 18px 30px rgba(29, 78, 216, 0.22);
+        }
+
+        .content-tab-panel {
+            display: none;
+        }
+
+        .content-tab-panel.active {
+            display: block;
+        }
+
+        .admin-desk-form {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto;
+            align-items: end;
+            padding: 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(47, 124, 246, 0.12);
+            background: rgba(255, 255, 255, 0.82);
+        }
+
+        .admin-desk-form strong,
+        .admin-desk-form span {
+            display: block;
+        }
+
+        .admin-desk-form span {
+            margin-top: 4px;
+            color: #5b7297;
+            font-size: 0.9rem;
+        }
+
         .flash {
             padding: 15px 18px;
             border-radius: 18px;
@@ -596,9 +714,19 @@
         }
 
         @media (max-width: 720px) {
+            .topbar {
+                align-items: start;
+                flex-direction: column;
+            }
+
+            .topbar-actions {
+                width: 100%;
+            }
+
             .stats,
             .room-grid,
-            .row {
+            .row,
+            .admin-desk-form {
                 grid-template-columns: 1fr;
             }
 
@@ -626,6 +754,24 @@
 {% block body %}
     <div class="page">
         <div class="shell">
+            {% if app.user %}
+                <section class="topbar" aria-label="Zalogowany uzytkownik">
+                    <div class="topbar-user">
+                        <span class="topbar-label">Zalogowano jako</span>
+                        <strong>{{ app.user.name }}</strong>
+                    </div>
+                    <div class="topbar-actions">
+                        <div class="topbar-meta">
+                            <span class="chip">{{ app.user.email }}</span>
+                            {% if app.user.team %}
+                                <span class="chip">Zespol: {{ app.user.team }}</span>
+                            {% endif %}
+                        </div>
+                        <a class="topbar-link ghost" href="{{ path('app_logout') }}">Wyloguj</a>
+                    </div>
+                </section>
+            {% endif %}
+
             {% for label, messages in app.flashes %}
                 {% for message in messages %}
                     <div class="flash {{ label }}">{{ message }}</div>
@@ -778,118 +924,162 @@
                 </div>
 
                 <div class="main-column">
-                    <article class="panel">
-                        <div class="eyebrow">Zakladka: biurka</div>
-                        <h2>Plan pomieszczen</h2>
-                        <div class="desk-view-toggle" aria-label="Przelacz widok biurek">
-                            <button type="button" class="desk-view-button active" data-desk-view-target="cards">Widok kart</button>
-                            <button type="button" class="desk-view-button" data-desk-view-target="map">Mapa 2D</button>
-                        </div>
+                    <div class="content-tabs" aria-label="Glowne zakladki widoku">
+                        <button type="button" class="content-tab-button active" data-content-tab-target="desks">Biurka</button>
+                        <button type="button" class="content-tab-button" data-content-tab-target="week">Tydzien</button>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <button type="button" class="content-tab-button" data-content-tab-target="admin-desks">Edycja biurek</button>
+                        {% endif %}
+                    </div>
 
-                        <div class="room-views">
-                            <div class="room-view room-view-list active" data-desk-view="cards">
-                                <div class="rooms">
-                                    {% for room in rooms %}
-                                        <article>
-                                            <h3>{{ room.name }}</h3>
-                                            <p class="muted">{{ room.description }}</p>
-                                            <div class="room-grid">
-                                                {% for desk in room.desks %}
-                                                    <div class="desk {% if desk.isFree %}free{% endif %}">
-                                                        <strong>{{ desk.label }}</strong>
-                                                        {% if desk.occupancy %}
-                                                            <p>{{ desk.occupancy.userName }}</p>
-                                                            <p class="muted">{{ desk.occupancy.team }}</p>
-                                                            <span class="pill {{ desk.occupancy.type }}">{{ desk.occupancy.label }}</span>
-                                                        {% else %}
-                                                            <p>Biurko wolne</p>
-                                                            {% if activeUserStatus.isOnVacation %}
-                                                                <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} jest na urlopie</button>
-                                                            {% elseif activeUserStatus.deskLabel %}
-                                                                <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} ma juz biurko</button>
-                                                            {% else %}
-                                                                <form method="post" action="{{ path('app_desk_claim') }}">
-                                                                    <input type="hidden" name="userId" value="{{ activeUser.id }}">
-                                                                    <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
-                                                                    <input type="hidden" name="deskId" value="{{ desk.id }}">
-                                                                    <button type="submit" class="desk-action">Zajmij jako {{ activeUser.name }}</button>
-                                                                </form>
-                                                            {% endif %}
-                                                        {% endif %}
-                                                    </div>
-                                                {% endfor %}
-                                            </div>
-                                        </article>
-                                    {% endfor %}
-                                </div>
+                    <div class="content-tab-panel active" data-content-tab="desks">
+                        <article class="panel">
+                            <div class="eyebrow">Zakladka: biurka</div>
+                            <h2>Plan pomieszczen</h2>
+                            <div class="desk-view-toggle" aria-label="Przelacz widok biurek">
+                                <button type="button" class="desk-view-button active" data-desk-view-target="cards">Widok kart</button>
+                                <button type="button" class="desk-view-button" data-desk-view-target="map">Mapa 2D</button>
                             </div>
 
-                            <div class="room-view room-view-map" data-desk-view="map">
-                                <div class="rooms">
-                                    {% for room in rooms %}
-                                        <article>
-                                            <h3>{{ room.name }}</h3>
-                                            <p class="muted">{{ room.description }}</p>
-                                            <div class="desk-map">
-                                                <div
-                                                    class="desk-map-room"
-                                                    style="grid-template-columns: repeat({{ room.map.width }}, minmax(72px, 1fr)); grid-template-rows: repeat({{ room.map.height }}, minmax(56px, auto));"
-                                                >
+                            <div class="room-views">
+                                <div class="room-view room-view-list active" data-desk-view="cards">
+                                    <div class="rooms">
+                                        {% for room in rooms %}
+                                            <article>
+                                                <h3>{{ room.name }}</h3>
+                                                <p class="muted">{{ room.description }}</p>
+                                                <div class="room-grid">
                                                     {% for desk in room.desks %}
-                                                        <div
-                                                            class="desk-map-item"
-                                                            style="grid-column: {{ desk.position.x }} / span 1; grid-row: {{ desk.position.y }} / span 1;"
-                                                        >
-                                                            <div class="desk {% if desk.isFree %}free{% endif %}">
-                                                                <strong>{{ desk.label }}</strong>
-                                                                {% if desk.occupancy %}
-                                                                    <p>{{ desk.occupancy.userName }}</p>
-                                                                    <p class="muted">{{ desk.occupancy.team }}</p>
-                                                                    <span class="pill {{ desk.occupancy.type }}">{{ desk.occupancy.label }}</span>
+                                                        <div class="desk {% if desk.isFree %}free{% endif %}">
+                                                            <strong>{{ desk.label }}</strong>
+                                                            {% if desk.occupancy %}
+                                                                <p>{{ desk.occupancy.userName }}</p>
+                                                                <p class="muted">{{ desk.occupancy.team }}</p>
+                                                                <span class="pill {{ desk.occupancy.type }}">{{ desk.occupancy.label }}</span>
+                                                            {% else %}
+                                                                <p>Biurko wolne</p>
+                                                                {% if activeUserStatus.isOnVacation %}
+                                                                    <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} jest na urlopie</button>
+                                                                {% elseif activeUserStatus.deskLabel %}
+                                                                    <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} ma juz biurko</button>
                                                                 {% else %}
-                                                                    <p>Biurko wolne</p>
-                                                                    {% if activeUserStatus.isOnVacation %}
-                                                                        <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} jest na urlopie</button>
-                                                                    {% elseif activeUserStatus.deskLabel %}
-                                                                        <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} ma juz biurko</button>
-                                                                    {% else %}
-                                                                        <form method="post" action="{{ path('app_desk_claim') }}">
-                                                                            <input type="hidden" name="userId" value="{{ activeUser.id }}">
-                                                                            <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
-                                                                            <input type="hidden" name="deskId" value="{{ desk.id }}">
-                                                                            <button type="submit" class="desk-action">Zajmij jako {{ activeUser.name }}</button>
-                                                                        </form>
-                                                                    {% endif %}
+                                                                    <form method="post" action="{{ path('app_desk_claim') }}">
+                                                                        <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                                                                        <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                                                        <input type="hidden" name="deskId" value="{{ desk.id }}">
+                                                                        <button type="submit" class="desk-action">Zajmij jako {{ activeUser.name }}</button>
+                                                                    </form>
                                                                 {% endif %}
-                                                            </div>
+                                                            {% endif %}
                                                         </div>
                                                     {% endfor %}
                                                 </div>
-                                                <div class="map-legend" aria-hidden="true">
-                                                    <span><i class="map-dot free"></i> Wolne biurko</span>
-                                                    <span><i class="map-dot busy"></i> Zajete biurko</span>
+                                            </article>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="room-view room-view-map" data-desk-view="map">
+                                    <div class="rooms">
+                                        {% for room in rooms %}
+                                            <article>
+                                                <h3>{{ room.name }}</h3>
+                                                <p class="muted">{{ room.description }}</p>
+                                                <div class="desk-map">
+                                                    <div
+                                                        class="desk-map-room"
+                                                        style="grid-template-columns: repeat({{ room.map.width }}, minmax(72px, 1fr)); grid-template-rows: repeat({{ room.map.height }}, minmax(56px, auto));"
+                                                    >
+                                                        {% for desk in room.desks %}
+                                                            <div
+                                                                class="desk-map-item"
+                                                                style="grid-column: {{ desk.position.x }} / span 1; grid-row: {{ desk.position.y }} / span 1;"
+                                                            >
+                                                                <div class="desk {% if desk.isFree %}free{% endif %}">
+                                                                    <strong>{{ desk.label }}</strong>
+                                                                    {% if desk.occupancy %}
+                                                                        <p>{{ desk.occupancy.userName }}</p>
+                                                                        <p class="muted">{{ desk.occupancy.team }}</p>
+                                                                        <span class="pill {{ desk.occupancy.type }}">{{ desk.occupancy.label }}</span>
+                                                                    {% else %}
+                                                                        <p>Biurko wolne</p>
+                                                                        {% if activeUserStatus.isOnVacation %}
+                                                                            <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} jest na urlopie</button>
+                                                                        {% elseif activeUserStatus.deskLabel %}
+                                                                            <button type="button" class="desk-action ghost" disabled>{{ activeUser.name }} ma juz biurko</button>
+                                                                        {% else %}
+                                                                            <form method="post" action="{{ path('app_desk_claim') }}">
+                                                                                <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                                                                                <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                                                                <input type="hidden" name="deskId" value="{{ desk.id }}">
+                                                                                <button type="submit" class="desk-action">Zajmij jako {{ activeUser.name }}</button>
+                                                                            </form>
+                                                                        {% endif %}
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                    <div class="map-legend" aria-hidden="true">
+                                                        <span><i class="map-dot free"></i> Wolne biurko</span>
+                                                        <span><i class="map-dot busy"></i> Zajete biurko</span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </article>
-                                    {% endfor %}
+                                            </article>
+                                        {% endfor %}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </article>
+                        </article>
+                    </div>
 
-                    <article class="panel">
-                        <div class="eyebrow">Zakladka: tydzien</div>
-                        <h2>Perspektywa 5 dni</h2>
-                        <div class="week">
-                            {% for day in weekOverview %}
-                                <div class="week-day">
-                                    <strong>{{ day.date|date('D, d.m') }}</strong>
-                                    <p class="muted">{{ day.occupiedCount }} zajetych / {{ day.freeCount }} wolnych</p>
-                                    <span class="pill vacation">{{ day.vacationCount }} urlop</span>
+                    <div class="content-tab-panel" data-content-tab="week">
+                        <article class="panel">
+                            <div class="eyebrow">Zakladka: tydzien</div>
+                            <h2>Perspektywa 5 dni</h2>
+                            <div class="week">
+                                {% for day in weekOverview %}
+                                    <div class="week-day">
+                                        <strong>{{ day.date|date('D, d.m') }}</strong>
+                                        <p class="muted">{{ day.occupiedCount }} zajetych / {{ day.freeCount }} wolnych</p>
+                                        <span class="pill vacation">{{ day.vacationCount }} urlop</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </article>
+                    </div>
+
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <div class="content-tab-panel" data-content-tab="admin-desks">
+                            <article class="panel">
+                                <div class="eyebrow">Admin / biurka</div>
+                                <h2>Modyfikowanie nazw biurek</h2>
+                                <p class="lead">Ten widok jest dostepny tylko dla administratora i pozwala zmieniac nazwy wyswietlane w planie pomieszczen oraz przy rezerwacjach.</p>
+
+                                <div class="admin-desk-grid">
+                                    {% for room in rooms %}
+                                        {% for desk in room.desks %}
+                                            <form class="admin-desk-form" method="post" action="{{ path('app_admin_desk_label_update', {deskId: desk.id}) }}">
+                                                <div>
+                                                    <strong>{{ desk.id }}</strong>
+                                                    <span>{{ room.name }}</span>
+                                                </div>
+                                                <label>
+                                                    Nazwa biurka
+                                                    <input type="text" name="label" value="{{ desk.label }}" maxlength="255" required>
+                                                </label>
+                                                <div>
+                                                    <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                                    <input type="hidden" name="activeUserId" value="{{ activeUser.id }}">
+                                                    <button type="submit">Zapisz</button>
+                                                </div>
+                                            </form>
+                                        {% endfor %}
+                                    {% endfor %}
                                 </div>
-                            {% endfor %}
+                            </article>
                         </div>
-                    </article>
+                    {% endif %}
                 </div>
             </section>
         </div>
@@ -901,6 +1091,8 @@
         document.addEventListener('DOMContentLoaded', function () {
             const buttons = Array.from(document.querySelectorAll('[data-desk-view-target]'));
             const views = Array.from(document.querySelectorAll('[data-desk-view]'));
+            const contentTabButtons = Array.from(document.querySelectorAll('[data-content-tab-target]'));
+            const contentTabPanels = Array.from(document.querySelectorAll('[data-content-tab]'));
 
             buttons.forEach(function (button) {
                 button.addEventListener('click', function () {
@@ -912,6 +1104,20 @@
 
                     views.forEach(function (view) {
                         view.classList.toggle('active', view.getAttribute('data-desk-view') === target);
+                    });
+                });
+            });
+
+            contentTabButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const target = button.getAttribute('data-content-tab-target');
+
+                    contentTabButtons.forEach(function (item) {
+                        item.classList.toggle('active', item === button);
+                    });
+
+                    contentTabPanels.forEach(function (panel) {
+                        panel.classList.toggle('active', panel.getAttribute('data-content-tab') === target);
                     });
                 });
             });

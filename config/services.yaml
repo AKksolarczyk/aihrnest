@@ -22,7 +22,10 @@ services:
             - '../src/Kernel.php'
 
     App\Workspace\Domain\Repository\OfficeLayoutRepositoryInterface:
-        alias: App\Workspace\Infrastructure\OfficeLayout\StaticOfficeLayoutRepository
+        alias: App\Workspace\Infrastructure\OfficeLayout\PersistentOfficeLayoutRepository
+
+    App\Workspace\Domain\Repository\DeskLabelRepositoryInterface:
+        alias: App\Workspace\Infrastructure\Persistence\DoctrineDeskLabelRepository
 
     App\Workspace\Domain\Repository\UserRepositoryInterface:
         alias: App\Workspace\Infrastructure\Persistence\DoctrineUserRepository
