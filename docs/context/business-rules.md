@@ -39,6 +39,7 @@ Ten dokument opisuje obowiazujace reguly biznesowe systemu na obecnym etapie.
 - Uzytkownik nie powinien miec wiecej niz jednej aktywnej rezerwacji biurka na ten sam dzien.
 - Przypisane biurko nie jest tym samym co rezerwacja biurka.
 - Brak przypisanego biurka nie blokuje korzystania z systemu.
+- Uzytkownik moze recznie zwolnic biurko tylko wtedy, gdy chodzi o zajecie z puli wolnych biurek, a nie o przypisanie stale.
 
 ## Waitlista
 

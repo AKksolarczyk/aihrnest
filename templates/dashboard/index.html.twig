@@ -1039,6 +1039,13 @@
                                     <strong>Aktualnie zajete biurko</strong>
                                     <div class="muted">{{ activeUserStatus.deskLabel }} / {{ activeUserStatus.statusLabel }}</div>
                                 </div>
+                                {% if activeUserStatus.occupancyType == 'claim' %}
+                                    <form method="post" action="{{ path('app_desk_claim_release') }}">
+                                        <input type="hidden" name="userId" value="{{ activeUser.id }}">
+                                        <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                        <button type="submit" class="ghost">Zwolnij biurko</button>
+                                    </form>
+                                {% endif %}
                             {% else %}
                                 <p class="muted">Uzytkownik nie ma przypisanego biurka na wybrany dzien, wiec mozesz przypisac mu jedno z wolnych miejsc.</p>
                                 <form method="post" action="{{ path('app_desk_claim') }}">

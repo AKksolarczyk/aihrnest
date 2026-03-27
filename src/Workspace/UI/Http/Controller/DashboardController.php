@@ -14,6 +14,8 @@ use App\Workspace\Application\Command\RequestVacation\RequestVacationCommand;
 use App\Workspace\Application\Command\RequestVacation\RequestVacationHandler;
 use App\Workspace\Application\Command\ReportIssue\ReportIssueCommand;
 use App\Workspace\Application\Command\ReportIssue\ReportIssueHandler;
+use App\Workspace\Application\Command\ReleaseDeskClaim\ReleaseDeskClaimCommand;
+use App\Workspace\Application\Command\ReleaseDeskClaim\ReleaseDeskClaimHandler;
 use App\Workspace\Application\Query\GetDashboard\GetDashboardHandler;
 use App\Workspace\Application\Query\GetDashboard\GetDashboardQuery;
 use App\Workspace\Domain\Model\DeskLabel;
@@ -94,6 +96,28 @@ final class DashboardController extends AbstractController
             ));
 
             $session->getFlashBag()->add('success', 'Wolne biurko zostalo zajete.');
+        } catch (Throwable $exception) {
+            $session->getFlashBag()->add('error', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('app_dashboard', ['date' => $date]);
+    }
+
+    #[Route('/claims/release', name: 'app_desk_claim_release', methods: ['POST'])]
+    public function releaseDeskClaim(
+        Request $request,
+        SessionInterface $session,
+        ReleaseDeskClaimHandler $handler,
+    ): RedirectResponse {
+        $date = $request->request->getString('date', date('Y-m-d'));
+
+        try {
+            $handler->handle(new ReleaseDeskClaimCommand(
+                $request->request->getString('userId'),
+                new DateTimeImmutable($date),
+            ));
+
+            $session->getFlashBag()->add('success', 'Biurko zostalo zwolnione.');
         } catch (Throwable $exception) {
             $session->getFlashBag()->add('error', $exception->getMessage());
         }

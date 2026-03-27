@@ -24,6 +24,8 @@ interface DeskClaimRepositoryInterface
      */
     public function findAllForUserInRange(string $userId, DateTimeImmutable $startDate, DateTimeImmutable $endDate): array;
 
+    public function findOneForUserAndDate(string $userId, DateTimeImmutable $date): ?DeskClaim;
+
     public function add(DeskClaim $deskClaim): void;
 
     public function remove(DeskClaim $deskClaim): void;

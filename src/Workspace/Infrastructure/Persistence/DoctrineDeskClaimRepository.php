@@ -51,6 +51,17 @@ final class DoctrineDeskClaimRepository implements DeskClaimRepositoryInterface
         return $deskClaims;
     }
 
+    public function findOneForUserAndDate(string $userId, DateTimeImmutable $date): ?DeskClaim
+    {
+        /** @var ?DeskClaim $deskClaim */
+        $deskClaim = $this->entityManager->getRepository(DeskClaim::class)->findOneBy([
+            'userId' => $userId,
+            'date' => $date,
+        ]);
+
+        return $deskClaim;
+    }
+
     public function add(DeskClaim $deskClaim): void
     {
         $this->entityManager->persist($deskClaim);

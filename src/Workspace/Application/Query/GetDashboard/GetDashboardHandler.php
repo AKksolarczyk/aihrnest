@@ -121,6 +121,7 @@ final class GetDashboardHandler
                 'isOnVacation' => $isOnVacation,
                 'isScheduledToday' => $isScheduled,
                 'deskLabel' => $deskId ? ($deskMap[$deskId]['label'] ?? $deskId) : null,
+                'occupancyType' => $deskId !== null ? ($dailyPlan->occupancy()[$deskId]['type'] ?? null) : null,
                 'statusLabel' => match (true) {
                     $isOnVacation => 'Urlop',
                     $deskId !== null && $user->assignedDeskId() !== null && $deskId === $user->assignedDeskId() => 'Pracuje z przypisanego biurka',
