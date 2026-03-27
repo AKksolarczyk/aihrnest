@@ -116,6 +116,27 @@
             display: grid;
             gap: 12px;
             margin-bottom: 6px;
+            max-height: 40vh;
+            overflow-y: auto;
+            padding-right: 8px;
+            align-content: start;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(47, 124, 246, 0.55) rgba(47, 124, 246, 0.08);
+        }
+
+        .tabs::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .tabs::-webkit-scrollbar-track {
+            background: rgba(47, 124, 246, 0.08);
+            border-radius: 999px;
+        }
+
+        .tabs::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #2f7cf6 0%, #53c7ff 100%);
+            border-radius: 999px;
+            border: 2px solid rgba(241, 247, 255, 0.9);
         }
 
         .tab {
@@ -493,6 +514,27 @@
 
             <section class="dashboard-layout">
                 <div class="sidebar-column">
+                    <aside class="panel stack">
+                    <div>
+                        <div class="eyebrow">DeskFlow / dzien pracy</div>
+                        <h2>Dzien pracy</h2>
+                    </div>
+
+                    <form method="get" action="{{ path('app_dashboard') }}">
+                        <label>
+                            Dzien roboczy
+                            <input type="date" name="date" value="{{ selectedDate|date('Y-m-d') }}" onchange="this.form.submit()">
+                        </label>
+                    </form>
+
+                    <div class="meta-list">
+                        <div class="meta-item">
+                            <strong>Aktywny uzytkownik</strong>
+                            <div class="muted">{{ activeUser.name }}{% if activeUser.team %} / {{ activeUser.team }}{% endif %}</div>
+                        </div>
+                    </div>
+                    </aside>
+
                     <aside class="panel">
                         <div class="eyebrow">DeskFlow / uzytkownicy</div>
                         <div class="tabs" aria-label="Zakladki uzytkownikow">
@@ -522,44 +564,6 @@
                                 </form>
                             {% endfor %}
                         </div>
-                    </aside>
-
-                    <aside class="panel stack">
-                    <div>
-                        <h2>Zakladka: dzien pracy</h2>
-                        <p class="muted">Zmien date albo wykonaj akcje dla aktywnego uzytkownika.</p>
-                    </div>
-
-                    <form method="get" action="{{ path('app_dashboard') }}">
-                        <label>
-                            Dzien roboczy
-                            <input type="date" name="date" value="{{ selectedDate|date('Y-m-d') }}">
-                        </label>
-                        <button class="ghost" type="submit">Pokaz plan dnia</button>
-                    </form>
-
-                    <div class="meta-list">
-                        <div class="meta-item">
-                            <strong>Harmonogram tygodnia</strong>
-                            <div class="muted">{{ activeUserStatus.schedule|join(', ') }}</div>
-                        </div>
-                        <div class="meta-item">
-                            <strong>Pozostaly limit urlopu</strong>
-                            <div class="muted">{{ activeUserStatus.vacationDaysRemaining }} z {{ activeUserStatus.vacationDaysTotal }} dni</div>
-                        </div>
-                        <div class="meta-item">
-                            <strong>Status na wybrany dzien</strong>
-                            <span class="pill {% if activeUserStatus.isOnVacation %}vacation{% elseif activeUserStatus.deskLabel and activeUserStatus.isScheduledToday %}schedule{% elseif activeUserStatus.deskLabel %}claim{% else %}none{% endif %}">
-                                {% if activeUserStatus.deskLabel %}
-                                    {{ activeUserStatus.deskLabel }}
-                                {% elseif activeUserStatus.isOnVacation %}
-                                    na urlopie
-                                {% else %}
-                                    brak miejsca
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
                     </aside>
 
                     <div class="stack">
