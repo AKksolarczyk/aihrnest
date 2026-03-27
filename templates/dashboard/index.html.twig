@@ -787,6 +787,24 @@
             background: rgba(255, 255, 255, 0.84);
         }
 
+        .people-card-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .people-card-head form {
+            display: block;
+        }
+
+        .people-pair-button {
+            min-width: auto;
+            padding: 10px 14px;
+            font-size: 0.86rem;
+            white-space: nowrap;
+        }
+
         .people-card.is-hidden {
             display: none;
         }
@@ -1378,8 +1396,18 @@
                             </div>
                             <div class="people-list">
                                 {% for person in peopleFinder %}
-                                    <div class="people-card" data-people-search-item data-people-search-text="{{ (person.name ~ ' ' ~ person.team ~ ' ' ~ person.deskLabel ~ ' ' ~ person.statusLabel)|lower }}">
-                                        <strong>{{ person.name }}</strong>
+                                    <div class="people-card" data-people-search-item data-people-search-text="{{ (person.name ~ ' ' ~ person.email ~ ' ' ~ person.team ~ ' ' ~ person.deskLabel ~ ' ' ~ person.statusLabel)|lower }}">
+                                        <div class="people-card-head">
+                                            <div>
+                                                <strong>{{ person.name }}</strong>
+                                                <div class="muted">{{ person.email }}</div>
+                                            </div>
+                                            <form method="post" action="{{ path('app_people_hrnest_pair') }}">
+                                                <input type="hidden" name="userId" value="{{ person.id }}">
+                                                <input type="hidden" name="date" value="{{ selectedDate|date('Y-m-d') }}">
+                                                <button type="submit" class="desk-action ghost people-pair-button">Paruj</button>
+                                            </form>
+                                        </div>
                                         <div class="muted">{{ person.team }}</div>
                                         <div>{{ person.deskLabel }}</div>
                                         <span class="pill none">{{ person.statusLabel }}</span>

@@ -19,8 +19,12 @@ use App\Workspace\Application\Query\GetDashboard\GetDashboardQuery;
 use App\Workspace\Domain\Model\DeskLabel;
 use App\Workspace\Domain\Repository\DeskLabelRepositoryInterface;
 use App\Workspace\Domain\Repository\OfficeLayoutRepositoryInterface;
+use App\Workspace\Domain\Repository\UserRepositoryInterface;
 use App\Workspace\Domain\Repository\WorkspaceTransactionInterface;
 use App\Workspace\Domain\Service\WorkspacePlanner;
+use App\Workspace\Infrastructure\Hrnest\HrnestApiException;
+use App\Workspace\Infrastructure\Hrnest\HrnestClient;
+use App\Workspace\Infrastructure\Hrnest\HrnestPerson;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -177,6 +181,52 @@ final class DashboardController extends AbstractController
         return $this->redirectToRoute('app_dashboard', ['date' => $date]);
     }
 
+    #[Route('/people/hrnest/pair', name: 'app_people_hrnest_pair', methods: ['POST'])]
+    public function pairPersonWithHrnest(
+        Request $request,
+        SessionInterface $session,
+        UserRepositoryInterface $userRepository,
+        HrnestClient $hrnestClient,
+    ): RedirectResponse {
+        $date = $request->request->getString('date', date('Y-m-d'));
+        $userId = $request->request->getString('userId');
+
+        try {
+            $user = $userRepository->findById($userId);
+
+            if ($user === null) {
+                throw new InvalidArgumentException('Nie znaleziono lokalnego uzytkownika do parowania.');
+            }
+
+            $matches = $hrnestClient->searchPeopleByEmail($user->email());
+
+            if ($matches === []) {
+                $session->getFlashBag()->add('error', sprintf('Nie znaleziono %s (%s) w HRnest.', $user->name(), $user->email()));
+            } else {
+                $match = $this->findExactEmailMatch($matches, $user->email()) ?? $matches[0];
+                $session->getFlashBag()->add(
+                    'success',
+                    sprintf(
+                        'Znaleziono dopasowanie w HRnest dla %s: %s (%s), zespol: %s.',
+                        $user->name(),
+                        $match->name,
+                        $match->email,
+                        $match->team,
+                    ),
+                );
+            }
+        } catch (HrnestApiException|InvalidArgumentException $exception) {
+            $session->getFlashBag()->add('error', $exception->getMessage());
+        } catch (Throwable) {
+            $session->getFlashBag()->add('error', 'Nie udalo sie wykonac parowania z HRnest.');
+        }
+
+        return $this->redirectToRoute('app_dashboard', [
+            'date' => $date,
+            'tab' => 'people',
+        ]);
+    }
+
     #[Route('/admin/desks/labels', name: 'app_admin_desk_label_update', methods: ['POST'])]
     public function updateDeskLabels(
         Request $request,
@@ -245,5 +295,21 @@ final class DashboardController extends AbstractController
         } catch (\Exception) {
             return new DateTimeImmutable('today');
         }
+    }
+
+    /**
+     * @param list<HrnestPerson> $matches
+     */
+    private function findExactEmailMatch(array $matches, string $email): ?HrnestPerson
+    {
+        $normalizedEmail = mb_strtolower(trim($email));
+
+        foreach ($matches as $match) {
+            if (mb_strtolower($match->email) === $normalizedEmail) {
+                return $match;
+            }
+        }
+
+        return null;
     }
 }
