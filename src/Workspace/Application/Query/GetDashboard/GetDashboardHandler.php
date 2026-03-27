@@ -407,6 +407,12 @@ final class GetDashboardHandler
                 'team' => (string) $status['team'],
                 'deskLabel' => (string) ($status['deskLabel'] ?? $this->translator->trans('dashboard.people.no_desk')),
                 'statusLabel' => (string) $status['statusLabel'],
+                'statusVariant' => match (true) {
+                    (bool) $status['isOnVacation'] => 'vacation',
+                    (string) ($status['occupancyType'] ?? '') === 'schedule' => 'schedule',
+                    (string) ($status['occupancyType'] ?? '') === 'claim' => 'claim',
+                    default => 'none',
+                },
             ];
         }
 

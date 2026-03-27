@@ -9,12 +9,14 @@ use App\Workspace\Domain\Repository\WorkspaceTransactionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ConfirmRegistrationController extends AbstractController
 {
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
         private readonly WorkspaceTransactionInterface $workspaceTransaction,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -24,7 +26,7 @@ final class ConfirmRegistrationController extends AbstractController
         $user = $this->userRepository->findByEmailConfirmationToken($token);
 
         if ($user === null) {
-            $this->addFlash('error', $this->trans('flash.registration.invalid_confirmation'));
+            $this->addFlash('error', $this->translator->trans('flash.registration.invalid_confirmation'));
 
             return $this->redirectToRoute('app_login');
         }
@@ -33,7 +35,7 @@ final class ConfirmRegistrationController extends AbstractController
         $this->userRepository->save($user);
         $this->workspaceTransaction->flush();
 
-        $this->addFlash('success', $this->trans('flash.registration.activated', locale: $user->locale()));
+        $this->addFlash('success', $this->translator->trans('flash.registration.activated', locale: $user->locale()));
 
         return $this->redirectToRoute('app_login');
     }
