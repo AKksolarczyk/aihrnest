@@ -3,10 +3,12 @@
 ## Zasady nadrzędne
 
 - Symfony jest frameworkiem dostarczającym runtime, HTTP, DI i integracje techniczne
-- domena nie może zależeć od Symfony ani infrastruktury
 - logika biznesowa ma być modelowana w duchu DDD
 - od początku rozdzielamy operacje zapisujące od odczytowych zgodnie z CQRS
 - kod ma być projektowany modułowo, bez centralnego `Service` z całą logiką
+- obecnie akceptujemy atrybuty Doctrine bezposrednio w modelach domenowych jako swiadomy kompromis projektowy
+- domena nie moze zalezec od HTTP, kontrolerow ani szczegolow UI
+- domena nie powinna zalezec od uslug Symfony poza uzgodnionymi interfejsami wymaganymi przez bezpieczenstwo aplikacji
 
 ## Warstwy
 
@@ -22,10 +24,11 @@ Warstwa domenowa zawiera:
 - repozytoria jako interfejsy
 
 Warstwa domenowa:
-- nie zna Doctrine
-- nie zna Symfony
+- moze zawierac atrybuty Doctrine
+- moze implementowac kontrakty niezbedne dla security, jesli dotyczy to modelu `User`
 - nie zna HTTP
 - nie używa tablic jako kontraktów biznesowych, jeśli można użyć jawnych typów
+- dalej pozostaje miejscem dla reguł biznesowych i inwariantow
 
 ### Application
 
@@ -41,6 +44,7 @@ Warstwa aplikacyjna:
 - nie zawiera logiki frameworkowej
 - nie zawiera SQL ani mapowania ORM
 - deleguje reguły biznesowe do domeny
+- pilnuje inwariantow przecinajacych wiele encji i rekordow
 
 ### Infrastructure
 

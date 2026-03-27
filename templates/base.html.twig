@@ -5,6 +5,63 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <script>
+            (() => {
+                const storedTheme = localStorage.getItem('theme');
+                const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                document.documentElement.dataset.theme = storedTheme ?? preferredTheme;
+            })();
+        </script>
+        <style>
+            .theme-toggle {
+                position: fixed;
+                right: 20px;
+                bottom: 20px;
+                z-index: 1000;
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                border: 1px solid rgba(148, 163, 184, 0.22);
+                border-radius: 999px;
+                padding: 12px 16px;
+                background: rgba(255, 255, 255, 0.94);
+                color: #0f172a;
+                box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+                backdrop-filter: blur(14px);
+                font: 700 0.92rem/1 "Manrope", "Segoe UI", sans-serif;
+                cursor: pointer;
+                transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, color 160ms ease;
+            }
+
+            .theme-toggle:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 22px 44px rgba(15, 23, 42, 0.2);
+            }
+
+            .theme-toggle span:last-child {
+                min-width: 4.8rem;
+                text-align: left;
+            }
+
+            :root[data-theme="dark"] .theme-toggle {
+                background: rgba(4, 10, 22, 0.94);
+                color: #f8fafc;
+                border-color: rgba(148, 163, 184, 0.14);
+                box-shadow: 0 22px 46px rgba(2, 6, 23, 0.42);
+            }
+
+            @media (max-width: 720px) {
+                .theme-toggle {
+                    right: 14px;
+                    bottom: 14px;
+                    padding: 11px 14px;
+                }
+
+                .theme-toggle span:last-child {
+                    min-width: 4.2rem;
+                }
+            }
+        </style>
         {% block stylesheets %}
         {% endblock %}
 
@@ -19,6 +76,40 @@
         {% endif %}
     </head>
     <body>
+        <button type="button" class="theme-toggle" data-theme-toggle aria-label="Zmien motyw">
+            <span data-theme-icon>🌙</span>
+            <span data-theme-label>Ciemny</span>
+        </button>
         {% block body %}{% endblock %}
+        <script>
+            (() => {
+                const button = document.querySelector('[data-theme-toggle]');
+
+                if (!button) {
+                    return;
+                }
+
+                const icon = button.querySelector('[data-theme-icon]');
+                const label = button.querySelector('[data-theme-label]');
+                const setTheme = (theme) => {
+                    document.documentElement.dataset.theme = theme;
+                    localStorage.setItem('theme', theme);
+                    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+                    button.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+                    if (icon) {
+                        icon.textContent = nextTheme === 'dark' ? '🌙' : '☀️';
+                    }
+                    if (label) {
+                        label.textContent = nextTheme === 'dark' ? 'Ciemny' : 'Jasny';
+                    }
+                };
+
+                setTheme(document.documentElement.dataset.theme || 'light');
+                button.addEventListener('click', () => {
+                    const currentTheme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+                    setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+                });
+            })();
+        </script>
     </body>
 </html>

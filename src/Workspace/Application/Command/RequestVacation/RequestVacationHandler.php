@@ -39,6 +39,12 @@ final class RequestVacationHandler
             throw new InvalidArgumentException('W wybranym zakresie nie ma zadnych dni roboczych do rozliczenia.');
         }
 
+        foreach ($this->vacationRepository->findAllForUser($command->userId) as $existingVacation) {
+            if ($existingVacation->overlapsWith($command->startDate, $command->endDate)) {
+                throw new InvalidArgumentException('Uzytkownik ma juz urlop w podanym zakresie.');
+            }
+        }
+
         $user->consumeVacationDays($requestedDays);
         $this->userRepository->save($user);
         $this->vacationRepository->add(new Vacation(

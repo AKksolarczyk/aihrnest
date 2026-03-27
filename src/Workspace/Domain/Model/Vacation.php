@@ -56,4 +56,9 @@ final class Vacation
     {
         return $date >= $this->startDate && $date <= $this->endDate;
     }
+
+    public function overlapsWith(DateTimeImmutable $startDate, DateTimeImmutable $endDate): bool
+    {
+        return $this->startDate <= $endDate && $startDate <= $this->endDate;
+    }
 }
