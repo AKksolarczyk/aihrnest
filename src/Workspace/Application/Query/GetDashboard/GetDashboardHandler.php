@@ -93,6 +93,7 @@ final class GetDashboardHandler
             $statuses[] = [
                 'id' => $userId,
                 'name' => $user->name(),
+                'role' => $user->role()->value,
                 'team' => $user->team(),
                 'assignedDeskLabel' => $deskMap[$user->assignedDeskId()]['label'] ?? $user->assignedDeskId(),
                 'schedule' => $user->schedule(),
@@ -247,13 +248,14 @@ final class GetDashboardHandler
     }
 
     /**
-     * @return array{id: string, name: string, team: string}
+     * @return array{id: string, name: string, role: string, team: string}
      */
     private function mapUser(User $user): array
     {
         return [
             'id' => $user->id(),
             'name' => $user->name(),
+            'role' => $user->role()->value,
             'team' => $user->team(),
         ];
     }
@@ -265,33 +267,52 @@ final class GetDashboardHandler
     {
         return [
             'focus-room' => [
-                'width' => 6,
+                'width' => 5,
                 'height' => 4,
                 'desks' => [
-                    'A-01' => ['x' => 2, 'y' => 1],
-                    'A-02' => ['x' => 5, 'y' => 1],
-                    'A-03' => ['x' => 2, 'y' => 3],
-                    'A-04' => ['x' => 5, 'y' => 3],
+                    'A-01' => ['x' => 1, 'y' => 1],
+                    'A-02' => ['x' => 2, 'y' => 1],
+                    'A-03' => ['x' => 4, 'y' => 1],
+                    'A-04' => ['x' => 5, 'y' => 1],
+                    'A-05' => ['x' => 1, 'y' => 2],
+                    'A-06' => ['x' => 2, 'y' => 2],
+                    'A-07' => ['x' => 4, 'y' => 2],
+                    'A-08' => ['x' => 5, 'y' => 2],
+                    'A-09' => ['x' => 1, 'y' => 4],
+                    'A-10' => ['x' => 5, 'y' => 3],
+                    'A-11' => ['x' => 5, 'y' => 4],
                 ],
             ],
             'client-room' => [
-                'width' => 7,
-                'height' => 4,
+                'width' => 6,
+                'height' => 2,
                 'desks' => [
-                    'B-01' => ['x' => 1, 'y' => 2],
-                    'B-02' => ['x' => 3, 'y' => 2],
-                    'B-03' => ['x' => 5, 'y' => 2],
-                    'B-04' => ['x' => 7, 'y' => 2],
+                    'B-01' => ['x' => 1, 'y' => 1],
+                    'B-02' => ['x' => 2, 'y' => 1],
+                    'B-03' => ['x' => 3, 'y' => 1],
+                    'B-04' => ['x' => 5, 'y' => 1],
+                    'B-05' => ['x' => 6, 'y' => 1],
+                    'B-06' => ['x' => 1, 'y' => 2],
+                    'B-07' => ['x' => 2, 'y' => 2],
+                    'B-08' => ['x' => 3, 'y' => 2],
+                    'B-09' => ['x' => 5, 'y' => 2],
+                    'B-10' => ['x' => 6, 'y' => 2],
                 ],
             ],
             'makers-room' => [
                 'width' => 6,
-                'height' => 5,
+                'height' => 2,
                 'desks' => [
-                    'C-01' => ['x' => 2, 'y' => 1],
-                    'C-02' => ['x' => 5, 'y' => 1],
-                    'C-03' => ['x' => 2, 'y' => 4],
-                    'C-04' => ['x' => 5, 'y' => 4],
+                    'C-01' => ['x' => 1, 'y' => 1],
+                    'C-02' => ['x' => 2, 'y' => 1],
+                    'C-03' => ['x' => 3, 'y' => 1],
+                    'C-04' => ['x' => 5, 'y' => 1],
+                    'C-05' => ['x' => 6, 'y' => 1],
+                    'C-06' => ['x' => 1, 'y' => 2],
+                    'C-07' => ['x' => 2, 'y' => 2],
+                    'C-08' => ['x' => 3, 'y' => 2],
+                    'C-09' => ['x' => 5, 'y' => 2],
+                    'C-10' => ['x' => 6, 'y' => 2],
                 ],
             ],
         ];

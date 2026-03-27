@@ -651,6 +651,7 @@
                         <div class="meta-item">
                             <strong>Aktywny uzytkownik</strong>
                             <div class="muted">{{ activeUser.name }}{% if activeUser.team %} / {{ activeUser.team }}{% endif %}</div>
+                            <div class="muted">Rola: {{ activeUser.role == 'admin' ? 'Admin' : 'User' }}</div>
                         </div>
                     </div>
                     </aside>
@@ -671,6 +672,7 @@
                                     <button type="submit" class="{% if activeUser and activeUser.id == user.id %}active{% endif %}">
                                         <strong>{{ user.name }}</strong>
                                         <span>{{ user.team }}</span>
+                                        <span>Rola: {{ user.role == 'admin' ? 'Admin' : 'User' }}</span>
                                         <small>
                                             {% if tabStatus and tabStatus.isOnVacation %}
                                                 Dzisiaj urlop
@@ -836,7 +838,7 @@
                                                     {% for desk in room.desks %}
                                                         <div
                                                             class="desk-map-item"
-                                                            style="grid-column: {{ desk.position.x }} / span 1; grid-row: {{ desk.position.y }} / span 2;"
+                                                            style="grid-column: {{ desk.position.x }} / span 1; grid-row: {{ desk.position.y }} / span 1;"
                                                         >
                                                             <div class="desk {% if desk.isFree %}free{% endif %}">
                                                                 <strong>{{ desk.label }}</strong>

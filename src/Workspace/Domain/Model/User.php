@@ -21,6 +21,8 @@ final class User
         private string $id,
         #[ORM\Column(type: 'string', length: 255)]
         private string $name,
+        #[ORM\Column(type: 'string', enumType: UserRole::class, length: 32)]
+        private UserRole $role,
         #[ORM\Column(type: 'string', length: 255)]
         private string $team,
         #[ORM\Column(type: 'string', length: 32)]
@@ -54,6 +56,11 @@ final class User
     public function name(): string
     {
         return $this->name;
+    }
+
+    public function role(): UserRole
+    {
+        return $this->role;
     }
 
     public function team(): string
